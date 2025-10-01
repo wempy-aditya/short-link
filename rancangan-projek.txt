@@ -1,0 +1,143 @@
+﻿Rancangan Proyek: Aplikasi Pemendek Tautan (URL Shortener)
+Dokumen ini berisi panduan lengkap untuk membangun aplikasi web pemendek tautan (URL shortener) dengan tumpukan teknologi Node.js dan database SQLite. Aplikasi ini dirancang agar modern, elegan, minimalis, responsif, dan mudah digunakan, dengan panel admin khusus untuk pengelolaan tautan.
+1. Ringkasan Fungsionalitas
+a. Fungsionalitas Publik
+* Halaman Utama: Antarmuka sederhana bagi siapa saja untuk memasukkan URL panjang dan mendapatkan versi pendeknya secara instan.
+* Pengalihan (Redirection): Ketika pengguna mengakses tautan pendek, sistem akan secara otomatis mengalihkannya ke URL asli yang sesuai.
+b. Fungsionalitas Admin (Memerlukan Login)
+* Otentikasi: Halaman login yang aman untuk admin.
+* Dashboard Admin:
+   * Melihat semua tautan yang telah dibuat.
+   * Membuat tautan pendek baru dengan custom alias (opsional).
+   * Mengedit tujuan URL dari tautan pendek yang sudah ada.
+   * Menghapus tautan pendek.
+   * Melihat statistik dasar seperti jumlah klik per tautan.
+2. Tumpukan Teknologi (Tech Stack)
+* Backend: Node.js dengan framework Express.js.
+* Database: SQLite.
+* Frontend: HTML5, CSS3 (menggunakan Tailwind CSS untuk desain modern dan responsif), dan JavaScript (Vanilla JS atau Alpine.js untuk interaktivitas ringan).
+* Lainnya:
+   * bcryptjs untuk hashing password admin.
+   * jsonwebtoken untuk manajemen sesi admin.
+   * shortid atau nanoid untuk menghasilkan kode unik tautan pendek.
+   * express-validator untuk validasi input.
+3. Desain Database (Skema SQLite)
+Kita hanya memerlukan dua tabel utama.
+a. Tabel users
+Untuk menyimpan data login admin.
+
+
+Nama Kolom
+	Tipe Data
+	Keterangan
+	id
+	INTEGER
+	Primary Key, Auto Increment
+	username
+	TEXT
+	Username admin (unik)
+	password
+	TEXT
+	Password yang sudah di-hash
+	b. Tabel links
+Untuk menyimpan informasi tautan.
+Nama Kolom
+	Tipe Data
+	Keterangan
+	id
+	INTEGER
+	Primary Key, Auto Increment
+	short_code
+	TEXT
+	Kode unik untuk tautan pendek (misal: aB1cD2e)
+	original_url
+	TEXT
+	URL asli yang panjang
+	click_count
+	INTEGER
+	Jumlah berapa kali tautan diakses (default: 0)
+	created_at
+	DATETIME
+	Tanggal dan waktu pembuatan
+	user_id
+	INTEGER
+	Foreign Key ke tabel users (untuk menandai tautan buatan admin)
+	4. Struktur API (Backend Endpoints)
+Berikut adalah rute API yang perlu dibuat menggunakan Express.js.
+a. Rute Publik
+* POST /api/shorten
+   * Fungsi: Menerima URL panjang dari publik dan membuat tautan pendek.
+   * Request Body: { "url": "https://url-panjang-sekali.com/..." }
+   * Response Success: { "shortUrl": "https://domain-anda.com/aB1cD2e" }
+* GET /:shortCode
+   * Fungsi: Menerima permintaan tautan pendek dan mengalihkan ke URL asli.
+   * Logic: Cari short_code di database, ambil original_url, tingkatkan click_count, lalu redirect.
+   * Response: 301 Redirect ke original_url.
+b. Rute Admin (Dilindungi Autentikasi)
+* POST /api/admin/login
+   * Fungsi: Mengautentikasi admin.
+   * Request Body: { "username": "admin", "password": "password_rahasia" }
+   * Response Success: { "token": "jwt_token_disini" }
+* GET /api/admin/links
+   * Fungsi: Mendapatkan semua data tautan untuk ditampilkan di dashboard.
+   * Headers: Authorization: Bearer <jwt_token>
+   * Response Success: [ { "id": 1, "short_code": "...", "original_url": "...", "click_count": 10 }, ... ]
+* POST /api/admin/links
+   * Fungsi: Membuat tautan pendek baru dari dashboard admin.
+   * Headers: Authorization: Bearer <jwt_token>
+   * Request Body: { "url": "...", "customAlias": "custom-saya" } (customAlias opsional)
+   * Response Success: { "message": "Tautan berhasil dibuat" }
+* PUT /api/admin/links/:id
+   * Fungsi: Mengedit URL asli dari sebuah tautan pendek.
+   * Headers: Authorization: Bearer <jwt_token>
+   * Request Body: { "originalUrl": "https://url-baru.com" }
+   * Response Success: { "message": "Tautan berhasil diperbarui" }
+* DELETE /api/admin/links/:id
+   * Fungsi: Menghapus sebuah tautan pendek.
+   * Headers: Authorization: Bearer <jwt_token>
+   * Response Success: { "message": "Tautan berhasil dihapus" }
+5. Desain Antarmuka (UI/UX)
+Desain harus minimalis, bersih, dan fokus pada fungsi utama.
+a. Halaman Utama (Publik)
+* Layout: Terpusat di tengah layar.
+* Komponen:
+   * Judul besar (misal: "Pemendek Tautan Simpel").
+   * Deskripsi singkat.
+   * Input field besar untuk menempelkan URL panjang.
+   * Tombol "Pendekkan!" yang jelas dan menarik.
+   * Area di bawahnya untuk menampilkan hasil tautan pendek yang baru dibuat, lengkap dengan tombol "Salin".
+* Palet Warna: Gunakan warna netral seperti putih, abu-abu muda, dengan satu warna aksen (misal: biru atau ungu) untuk tombol dan elemen interaktif.
+b. Halaman Login Admin (/admin/login)
+* Layout: Formulir login sederhana di tengah layar.
+* Komponen:
+   * Input untuk Username.
+   * Input untuk Password.
+   * Tombol "Login".
+c. Dashboard Admin (/admin/dashboard)
+* Layout: Tampilan tabel yang bersih dan mudah dibaca.
+* Komponen:
+   * Header: Menampilkan judul "Dashboard Admin" dan tombol "Logout".
+   * Formulir Tambah Tautan: Di bagian atas, ada formulir untuk menambah tautan baru (mirip halaman utama tapi dengan opsi custom alias).
+   * Tabel Tautan:
+      * Kolom: URL Asli, Tautan Pendek, Jumlah Klik, Aksi.
+      * Setiap baris memiliki tombol Edit dan Hapus.
+      * Tautan pendek ditampilkan sebagai link yang bisa diklik.
+* Responsif: Di perangkat mobile, tabel dapat diubah menjadi format kartu (cards) agar lebih mudah dibaca, atau tabel dapat digulir secara horizontal.
+6. Alur Kerja Implementasi
+1. Inisialisasi Proyek:
+   * Buat struktur folder proyek (misal: /public, /src, /db).
+   * npm init -y dan install semua dependensi (express, sqlite3, bcryptjs, jsonwebtoken, dll).
+2. Setup Database:
+   * Buat skrip untuk menginisialisasi database SQLite dan membuat tabel users dan links.
+   * Buat satu user admin secara manual untuk pertama kali.
+3. Backend Development:
+   * Buat file server utama (index.js atau app.js).
+   * Implementasikan semua endpoint API yang telah dirancang.
+   * Buat middleware untuk proteksi rute admin menggunakan JWT.
+4. Frontend Development:
+   * Buat file HTML statis untuk setiap halaman (Utama, Login, Dashboard).
+   * Gunakan Tailwind CSS untuk styling.
+   * Tulis skrip JavaScript untuk berinteraksi dengan API (mengirim data, menampilkan hasil, mengelola state login).
+5. Pengujian & Deployment:
+   * Uji setiap fungsionalitas secara menyeluruh.
+   * Siapkan aplikasi untuk deployment di platform pilihan (misal: Heroku, DigitalOcean, atau layanan hosting Node.js lainnya).
