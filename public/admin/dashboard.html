@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Pemendek Tautan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <i class="fas fa-tachometer-alt text-blue-600 text-2xl mr-3"></i>
+                    <h1 class="text-2xl font-bold text-gray-800">Dashboard Admin</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-600">Selamat datang, <span id="adminUsername" class="font-semibold"></span></span>
+                    <button 
+                        id="logoutBtn"
+                        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                    >
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <i class="fas fa-link text-blue-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Tautan</p>
+                        <p id="totalLinks" class="text-2xl font-bold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <i class="fas fa-mouse-pointer text-green-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Klik</p>
+                        <p id="totalClicks" class="text-2xl font-bold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center">
+                    <div class="p-3 bg-purple-100 rounded-full">
+                        <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Rata-rata Klik</p>
+                        <p id="avgClicks" class="text-2xl font-bold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Link Form -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-plus-circle text-blue-600 mr-2"></i>
+                Tambah Tautan Baru
+            </h2>
+            
+            <form id="addLinkForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                    <label for="newUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                        URL Asli
+                    </label>
+                    <input 
+                        type="url" 
+                        id="newUrl" 
+                        placeholder="https://contoh-url.com"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        required
+                    >
+                </div>
+                
+                <div>
+                    <label for="customAlias" class="block text-sm font-medium text-gray-700 mb-2">
+                        Custom Alias (Opsional)
+                    </label>
+                    <input 
+                        type="text" 
+                        id="customAlias" 
+                        placeholder="alias-custom"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        pattern="[a-zA-Z0-9-_]{3,20}"
+                        title="3-20 karakter, hanya huruf, angka, dash, dan underscore"
+                    >
+                </div>
+                
+                <div class="md:col-span-3">
+                    <button 
+                        type="submit" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
+                    >
+                        <i class="fas fa-plus mr-2"></i>
+                        Tambah Tautan
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Links Table -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-list text-blue-600 mr-2"></i>
+                    Daftar Tautan
+                </h2>
+            </div>
+            
+            <!-- Loading State -->
+            <div id="tableLoading" class="text-center py-12">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p class="mt-2 text-gray-600">Memuat data...</p>
+            </div>
+
+            <!-- Table -->
+            <div id="tableContainer" class="hidden overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                URL Asli
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Tautan Pendek
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Klik
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Dibuat
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="linksTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Table rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-12">
+                <i class="fas fa-link text-gray-300 text-4xl mb-4"></i>
+                <p class="text-gray-500 text-lg">Belum ada tautan yang dibuat</p>
+                <p class="text-gray-400">Tambahkan tautan pertama Anda menggunakan form di atas</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-xl bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Edit Tautan</h3>
+                <form id="editForm">
+                    <input type="hidden" id="editLinkId">
+                    <div class="mb-4">
+                        <label for="editUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                            URL Asli
+                        </label>
+                        <input 
+                            type="url" 
+                            id="editUrl" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            required
+                        >
+                    </div>
+                    <div class="flex justify-end space-x-3">
+                        <button 
+                            type="button" 
+                            id="cancelEdit"
+                            class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            type="submit" 
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
+                        >
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="message" class="hidden fixed top-4 right-4 z-50 max-w-sm w-full">
+        <div id="messageContent" class="rounded-lg p-4 shadow-lg">
+            <div class="flex items-center">
+                <i id="messageIcon" class="mr-3 text-xl"></i>
+                <p id="messageText" class="font-medium"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('adminToken');
+        
+        // Check authentication
+        if (!token) {
+            window.location.href = '/admin/login';
+        }
+
+        // Parse JWT token to get username
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            document.getElementById('adminUsername').textContent = payload.username;
+        } catch (e) {
+            console.error('Invalid token');
+            localStorage.removeItem('adminToken');
+            window.location.href = '/admin/login';
+        }
+
+        // DOM elements
+        const logoutBtn = document.getElementById('logoutBtn');
+        const addLinkForm = document.getElementById('addLinkForm');
+        const tableLoading = document.getElementById('tableLoading');
+        const tableContainer = document.getElementById('tableContainer');
+        const emptyState = document.getElementById('emptyState');
+        const linksTableBody = document.getElementById('linksTableBody');
+        const editModal = document.getElementById('editModal');
+        const editForm = document.getElementById('editForm');
+        const cancelEdit = document.getElementById('cancelEdit');
+        const message = document.getElementById('message');
+
+        // Stats elements
+        const totalLinks = document.getElementById('totalLinks');
+        const totalClicks = document.getElementById('totalClicks');
+        const avgClicks = document.getElementById('avgClicks');
+
+        // Logout functionality
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/admin/login';
+        });
+
+        // Show message function
+        function showMessage(text, type = 'success') {
+            const messageContent = document.getElementById('messageContent');
+            const messageIcon = document.getElementById('messageIcon');
+            const messageText = document.getElementById('messageText');
+            
+            messageText.textContent = text;
+            
+            if (type === 'success') {
+                messageContent.className = 'rounded-lg p-4 shadow-lg bg-green-50 border border-green-200';
+                messageIcon.className = 'mr-3 text-xl fas fa-check-circle text-green-500';
+            } else {
+                messageContent.className = 'rounded-lg p-4 shadow-lg bg-red-50 border border-red-200';
+                messageIcon.className = 'mr-3 text-xl fas fa-exclamation-triangle text-red-500';
+            }
+            
+            message.classList.remove('hidden');
+            
+            setTimeout(() => {
+                message.classList.add('hidden');
+            }, 5000);
+        }
+
+        // API request helper
+        async function apiRequest(url, options = {}) {
+            const response = await fetch(url, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers,
+                },
+            });
+
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('adminToken');
+                window.location.href = '/admin/login';
+                return;
+            }
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Terjadi kesalahan');
+            }
+            
+            return data;
+        }
+
+        // Load links data
+        async function loadLinks() {
+            try {
+                const links = await apiRequest('/api/admin/links');
+                
+                // Update stats
+                totalLinks.textContent = links.length;
+                const clicks = links.reduce((sum, link) => sum + link.click_count, 0);
+                totalClicks.textContent = clicks;
+                avgClicks.textContent = links.length > 0 ? Math.round(clicks / links.length) : 0;
+                
+                // Show table or empty state
+                if (links.length === 0) {
+                    tableLoading.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+                
+                // Populate table
+                linksTableBody.innerHTML = links.map(link => `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 max-w-xs truncate" title="${link.original_url}">
+                                ${link.original_url}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <a href="/${link.short_code}" target="_blank" class="text-blue-600 hover:text-blue-800 font-mono">
+                                ${window.location.origin}/${link.short_code}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                ${link.click_count} klik
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${new Date(link.created_at).toLocaleDateString('id-ID')}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editLink(${link.id}, '${link.original_url}')" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button onclick="deleteLink(${link.id})" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i> Hapus
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                tableLoading.classList.add('hidden');
+                tableContainer.classList.remove('hidden');
+                
+            } catch (error) {
+                showMessage(error.message, 'error');
+                tableLoading.classList.add('hidden');
+            }
+        }
+
+        // Add new link
+        addLinkForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const url = document.getElementById('newUrl').value;
+            const customAlias = document.getElementById('customAlias').value;
+            
+            try {
+                await apiRequest('/api/admin/links', {
+                    method: 'POST',
+                    body: JSON.stringify({ url, customAlias }),
+                });
+                
+                showMessage('Tautan berhasil ditambahkan');
+                addLinkForm.reset();
+                loadLinks();
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        // Edit link functions
+        function editLink(id, originalUrl) {
+            document.getElementById('editLinkId').value = id;
+            document.getElementById('editUrl').value = originalUrl;
+            editModal.classList.remove('hidden');
+        }
+
+        cancelEdit.addEventListener('click', () => {
+            editModal.classList.add('hidden');
+        });
+
+        editForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('editLinkId').value;
+            const originalUrl = document.getElementById('editUrl').value;
+            
+            try {
+                await apiRequest(`/api/admin/links/${id}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ originalUrl }),
+                });
+                
+                showMessage('Tautan berhasil diperbarui');
+                editModal.classList.add('hidden');
+                loadLinks();
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        // Delete link function
+        async function deleteLink(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus tautan ini?')) {
+                return;
+            }
+            
+            try {
+                await apiRequest(`/api/admin/links/${id}`, {
+                    method: 'DELETE',
+                });
+                
+                showMessage('Tautan berhasil dihapus');
+                loadLinks();
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        }
+
+        // Close modal when clicking outside
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                editModal.classList.add('hidden');
+            }
+        });
+
+        // Load initial data
+        loadLinks();
+    </script>
+</body>
+</html>
