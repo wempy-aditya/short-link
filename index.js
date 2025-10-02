@@ -271,6 +271,446 @@ app.delete('/api/admin/links/:id', authenticateToken, (req, res) => {
     });
 });
 
+// ===== FOLDER MANAGEMENT ENDPOINTS =====
+
+// GET /api/admin/folders - Mendapatkan semua folder
+app.get('/api/admin/folders', authenticateToken, (req, res) => {
+    const query = `
+        SELECT id, name, parent_id, created_at 
+        FROM folders 
+        WHERE user_id = ? 
+        ORDER BY name ASC
+    `;
+    
+    db.all(query, [req.user.id], (err, folders) => {
+        if (err) {
+            console.error('Error fetching folders:', err);
+            return res.status(500).json({ error: 'Gagal mengambil data folder' });
+        }
+        res.json(folders);
+    });
+});
+
+// POST /api/admin/folders - Membuat folder baru
+app.post('/api/admin/folders', authenticateToken, [
+    body('name').notEmpty().withMessage('Nama folder diperlukan'),
+    body('parent_id').optional({ nullable: true }).isInt().withMessage('Parent ID harus berupa angka')
+], (req, res) => {
+    console.log('POST /api/admin/folders - Request body:', req.body);
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log('Validation errors:', errors.array());
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { name, parent_id } = req.body;
+    
+    // Jika parent_id ada, pastikan folder parent milik user yang sama
+    if (parent_id) {
+        const checkParentQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
+        db.get(checkParentQuery, [parent_id, req.user.id], (err, parentFolder) => {
+            if (err) {
+                console.error('Error checking parent folder:', err);
+                return res.status(500).json({ error: 'Gagal memeriksa folder parent' });
+            }
+            
+            if (!parentFolder) {
+                console.log('Parent folder not found:', parent_id);
+                return res.status(400).json({ error: 'Folder parent tidak ditemukan' });
+            }
+            
+            // Insert folder baru
+            insertFolder();
+        });
+    } else {
+        insertFolder();
+    }
+    
+    function insertFolder() {
+        const insertQuery = `
+            INSERT INTO folders (name, user_id, parent_id) 
+            VALUES (?, ?, ?)
+        `;
+        
+        console.log('Inserting folder:', { name, user_id: req.user.id, parent_id: parent_id || null });
+        
+        db.run(insertQuery, [name, req.user.id, parent_id || null], function(err) {
+            if (err) {
+                console.error('Error creating folder:', err);
+                return res.status(500).json({ error: 'Gagal membuat folder' });
+            }
+            
+            console.log('Folder created successfully with ID:', this.lastID);
+            
+            res.status(201).json({
+                id: this.lastID,
+                name,
+                parent_id: parent_id || null,
+                message: 'Folder berhasil dibuat'
+            });
+        });
+    }
+});
+
+// PUT /api/admin/folders/:id - Mengupdate folder
+app.put('/api/admin/folders/:id', authenticateToken, [
+    body('name').notEmpty().withMessage('Nama folder diperlukan'),
+    body('parent_id').optional().isInt().withMessage('Parent ID harus berupa angka')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const folderId = req.params.id;
+    const { name, parent_id } = req.body;
+    
+    // Pastikan folder milik user yang sedang login
+    const checkOwnerQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
+    db.get(checkOwnerQuery, [folderId, req.user.id], (err, folder) => {
+        if (err) {
+            console.error('Error checking folder ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa kepemilikan folder' });
+        }
+        
+        if (!folder) {
+            return res.status(404).json({ error: 'Folder tidak ditemukan' });
+        }
+        
+        // Jika parent_id ada, pastikan folder parent milik user yang sama dan bukan dirinya sendiri
+        if (parent_id) {
+            if (parent_id == folderId) {
+                return res.status(400).json({ error: 'Folder tidak bisa menjadi parent dari dirinya sendiri' });
+            }
+            
+            const checkParentQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
+            db.get(checkParentQuery, [parent_id, req.user.id], (err, parentFolder) => {
+                if (err) {
+                    console.error('Error checking parent folder:', err);
+                    return res.status(500).json({ error: 'Gagal memeriksa folder parent' });
+                }
+                
+                if (!parentFolder) {
+                    return res.status(400).json({ error: 'Folder parent tidak ditemukan' });
+                }
+                
+                updateFolder();
+            });
+        } else {
+            updateFolder();
+        }
+        
+        function updateFolder() {
+            const updateQuery = `
+                UPDATE folders 
+                SET name = ?, parent_id = ? 
+                WHERE id = ? AND user_id = ?
+            `;
+            
+            db.run(updateQuery, [name, parent_id || null, folderId, req.user.id], function(err) {
+                if (err) {
+                    console.error('Error updating folder:', err);
+                    return res.status(500).json({ error: 'Gagal mengupdate folder' });
+                }
+                
+                if (this.changes === 0) {
+                    return res.status(404).json({ error: 'Folder tidak ditemukan' });
+                }
+                
+                res.json({ message: 'Folder berhasil diupdate' });
+            });
+        }
+    });
+});
+
+// DELETE /api/admin/folders/:id - Menghapus folder
+app.delete('/api/admin/folders/:id', authenticateToken, (req, res) => {
+    const folderId = req.params.id;
+    
+    // Pastikan folder milik user yang sedang login
+    const checkOwnerQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
+    db.get(checkOwnerQuery, [folderId, req.user.id], (err, folder) => {
+        if (err) {
+            console.error('Error checking folder ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa kepemilikan folder' });
+        }
+        
+        if (!folder) {
+            return res.status(404).json({ error: 'Folder tidak ditemukan' });
+        }
+        
+        // Hapus folder (CASCADE akan menghapus subfolder dan bookmark)
+        const deleteQuery = 'DELETE FROM folders WHERE id = ? AND user_id = ?';
+        db.run(deleteQuery, [folderId, req.user.id], function(err) {
+            if (err) {
+                console.error('Error deleting folder:', err);
+                return res.status(500).json({ error: 'Gagal menghapus folder' });
+            }
+            
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Folder tidak ditemukan' });
+            }
+            
+            res.json({ message: 'Folder berhasil dihapus' });
+        });
+    });
+});
+
+// ===== BOOKMARK MANAGEMENT ENDPOINTS =====
+
+// GET /api/admin/bookmarks - Mendapatkan semua bookmark
+app.get('/api/admin/bookmarks', authenticateToken, (req, res) => {
+    const folderId = req.query.folder_id;
+    
+    let query = `
+        SELECT b.id, b.title, b.original_url, b.folder_id, b.created_at,
+               f.name as folder_name
+        FROM bookmarks b
+        LEFT JOIN folders f ON b.folder_id = f.id
+        WHERE b.user_id = ?
+    `;
+    
+    const params = [req.user.id];
+    
+    // Add folder filter if folder_id is provided
+    if (folderId) {
+        query += ' AND b.folder_id = ?';
+        params.push(folderId);
+    }
+    
+    query += ' ORDER BY b.title ASC';
+    
+    db.all(query, params, (err, bookmarks) => {
+        if (err) {
+            console.error('Error fetching bookmarks:', err);
+            return res.status(500).json({ error: 'Gagal mengambil data bookmark' });
+        }
+        res.json(bookmarks);
+    });
+});
+
+// POST /api/admin/bookmarks - Membuat bookmark baru
+app.post('/api/admin/bookmarks', authenticateToken, [
+    body('title').notEmpty().withMessage('Judul bookmark diperlukan'),
+    body('original_url').isURL().withMessage('URL tidak valid'),
+    body('folder_id').isInt().withMessage('Folder ID diperlukan')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { title, original_url, folder_id } = req.body;
+    
+    // Pastikan folder milik user yang sedang login
+    const checkFolderQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
+    db.get(checkFolderQuery, [folder_id, req.user.id], (err, folder) => {
+        if (err) {
+            console.error('Error checking folder ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa folder' });
+        }
+        
+        if (!folder) {
+            return res.status(400).json({ error: 'Folder tidak ditemukan' });
+        }
+        
+        // Insert bookmark baru
+        const insertQuery = `
+            INSERT INTO bookmarks (title, original_url, folder_id, user_id) 
+            VALUES (?, ?, ?, ?)
+        `;
+        
+        db.run(insertQuery, [title, original_url, folder_id, req.user.id], function(err) {
+            if (err) {
+                console.error('Error creating bookmark:', err);
+                return res.status(500).json({ error: 'Gagal membuat bookmark' });
+            }
+            
+            res.status(201).json({
+                id: this.lastID,
+                title,
+                original_url,
+                folder_id,
+                message: 'Bookmark berhasil dibuat'
+            });
+        });
+    });
+});
+
+// PUT /api/admin/bookmarks/:id - Mengupdate bookmark
+app.put('/api/admin/bookmarks/:id', authenticateToken, [
+    body('title').notEmpty().withMessage('Judul bookmark diperlukan'),
+    body('original_url').isURL().withMessage('URL tidak valid'),
+    body('folder_id').isInt().withMessage('Folder ID diperlukan')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const bookmarkId = req.params.id;
+    const { title, original_url, folder_id } = req.body;
+    
+    // Pastikan bookmark milik user yang sedang login
+    const checkOwnerQuery = 'SELECT id FROM bookmarks WHERE id = ? AND user_id = ?';
+    db.get(checkOwnerQuery, [bookmarkId, req.user.id], (err, bookmark) => {
+        if (err) {
+            console.error('Error checking bookmark ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa kepemilikan bookmark' });
+        }
+        
+        if (!bookmark) {
+            return res.status(404).json({ error: 'Bookmark tidak ditemukan' });
+        }
+        
+        // Pastikan folder milik user yang sedang login
+        const checkFolderQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
+        db.get(checkFolderQuery, [folder_id, req.user.id], (err, folder) => {
+            if (err) {
+                console.error('Error checking folder ownership:', err);
+                return res.status(500).json({ error: 'Gagal memeriksa folder' });
+            }
+            
+            if (!folder) {
+                return res.status(400).json({ error: 'Folder tidak ditemukan' });
+            }
+            
+            // Update bookmark
+            const updateQuery = `
+                UPDATE bookmarks 
+                SET title = ?, original_url = ?, folder_id = ? 
+                WHERE id = ? AND user_id = ?
+            `;
+            
+            db.run(updateQuery, [title, original_url, folder_id, bookmarkId, req.user.id], function(err) {
+                if (err) {
+                    console.error('Error updating bookmark:', err);
+                    return res.status(500).json({ error: 'Gagal mengupdate bookmark' });
+                }
+                
+                if (this.changes === 0) {
+                    return res.status(404).json({ error: 'Bookmark tidak ditemukan' });
+                }
+                
+                res.json({ message: 'Bookmark berhasil diupdate' });
+            });
+        });
+    });
+});
+
+// DELETE /api/admin/bookmarks/:id - Menghapus bookmark
+app.delete('/api/admin/bookmarks/:id', authenticateToken, (req, res) => {
+    const bookmarkId = req.params.id;
+    
+    // Pastikan bookmark milik user yang sedang login
+    const checkOwnerQuery = 'SELECT id FROM bookmarks WHERE id = ? AND user_id = ?';
+    db.get(checkOwnerQuery, [bookmarkId, req.user.id], (err, bookmark) => {
+        if (err) {
+            console.error('Error checking bookmark ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa kepemilikan bookmark' });
+        }
+        
+        if (!bookmark) {
+            return res.status(404).json({ error: 'Bookmark tidak ditemukan' });
+        }
+        
+        // Hapus bookmark
+        const deleteQuery = 'DELETE FROM bookmarks WHERE id = ? AND user_id = ?';
+        db.run(deleteQuery, [bookmarkId, req.user.id], function(err) {
+            if (err) {
+                console.error('Error deleting bookmark:', err);
+                return res.status(500).json({ error: 'Gagal menghapus bookmark' });
+            }
+            
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Bookmark tidak ditemukan' });
+            }
+            
+            res.json({ message: 'Bookmark berhasil dihapus' });
+        });
+    });
+});
+
+// GET /api/admin/bookmarks-tree - Mendapatkan struktur tree folder dan bookmark
+app.get('/api/admin/bookmarks-tree', authenticateToken, (req, res) => {
+    // Fungsi rekursif untuk membangun tree structure
+    function buildTree(folders, bookmarks, parentId = null) {
+        const tree = [];
+        
+        // Filter folder berdasarkan parent_id
+        const childFolders = folders.filter(folder => folder.parent_id === parentId);
+        
+        childFolders.forEach(folder => {
+            const folderNode = {
+                id: folder.id,
+                name: folder.name,
+                type: 'folder',
+                parent_id: folder.parent_id,
+                created_at: folder.created_at,
+                children: [],
+                bookmarks: []
+            };
+            
+            // Tambahkan subfolder secara rekursif
+            folderNode.children = buildTree(folders, bookmarks, folder.id);
+            
+            // Tambahkan bookmark yang ada di folder ini
+            folderNode.bookmarks = bookmarks.filter(bookmark => bookmark.folder_id === folder.id);
+            
+            tree.push(folderNode);
+        });
+        
+        return tree;
+    }
+    
+    // Query untuk mendapatkan semua folder user
+    const foldersQuery = `
+        SELECT id, name, parent_id, created_at 
+        FROM folders 
+        WHERE user_id = ? 
+        ORDER BY name ASC
+    `;
+    
+    // Query untuk mendapatkan semua bookmark user
+    const bookmarksQuery = `
+        SELECT id, title, original_url, folder_id, created_at
+        FROM bookmarks 
+        WHERE user_id = ? 
+        ORDER BY title ASC
+    `;
+    
+    // Eksekusi kedua query secara paralel
+    db.all(foldersQuery, [req.user.id], (err, folders) => {
+        if (err) {
+            console.error('Error fetching folders for tree:', err);
+            return res.status(500).json({ error: 'Gagal mengambil data folder' });
+        }
+        
+        db.all(bookmarksQuery, [req.user.id], (err, bookmarks) => {
+            if (err) {
+                console.error('Error fetching bookmarks for tree:', err);
+                return res.status(500).json({ error: 'Gagal mengambil data bookmark' });
+            }
+            
+            // Bangun tree structure
+            const tree = buildTree(folders, bookmarks);
+            
+            // Tambahkan bookmark yang tidak memiliki folder (orphaned bookmarks)
+            const orphanedBookmarks = bookmarks.filter(bookmark => 
+                !folders.some(folder => folder.id === bookmark.folder_id)
+            );
+            
+            res.json({
+                tree: tree,
+                orphaned_bookmarks: orphanedBookmarks,
+                total_folders: folders.length,
+                total_bookmarks: bookmarks.length
+            });
+        });
+    });
+});
+
 // Inisialisasi database dan jalankan server
 initializeDatabase().then(() => {
     app.listen(PORT, () => {

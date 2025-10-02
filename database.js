@@ -42,6 +42,43 @@ function initializeDatabase() {
                 console.log('Links table created successfully');
             });
 
+            // Tabel folders untuk sistem bookmark
+            db.run(`CREATE TABLE IF NOT EXISTS folders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                user_id INTEGER NOT NULL,
+                parent_id INTEGER,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                FOREIGN KEY (parent_id) REFERENCES folders (id) ON DELETE CASCADE
+            )`, (err) => {
+                if (err) {
+                    console.error('Error creating folders table:', err);
+                    reject(err);
+                    return;
+                }
+                console.log('Folders table created successfully');
+            });
+
+            // Tabel bookmarks untuk menyimpan bookmark
+            db.run(`CREATE TABLE IF NOT EXISTS bookmarks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                original_url TEXT NOT NULL,
+                folder_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (folder_id) REFERENCES folders (id) ON DELETE CASCADE,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )`, (err) => {
+                if (err) {
+                    console.error('Error creating bookmarks table:', err);
+                    reject(err);
+                    return;
+                }
+                console.log('Bookmarks table created successfully');
+            });
+
             // Buat user admin default jika belum ada
             const defaultUsername = 'admin';
             const defaultPassword = 'admin123';

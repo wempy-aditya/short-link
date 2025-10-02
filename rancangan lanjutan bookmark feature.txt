@@ -1,0 +1,124 @@
+﻿Rancangan Lanjutan: Integrasi Fitur Bookmark dengan Sistem Folder Multi-Level
+Dokumen ini adalah panduan untuk memperluas fungsionalitas aplikasi pemendek tautan yang sudah ada dengan menambahkan sistem bookmark yang kuat. Fitur ini memungkinkan pengguna (admin) untuk menyimpan, mengelola, dan mengorganisir tautan dalam struktur folder dan subfolder yang tidak terbatas.
+1. Ringkasan Fungsionalitas Baru
+Fitur ini akan ditambahkan ke dalam halaman admin yang sudah ada dan dilindungi oleh sistem autentikasi yang sama.
+* Manajemen Folder:
+   * Membuat folder di level atas (root) atau di dalam folder lain (subfolder).
+   * Mengganti nama (rename) folder/subfolder.
+   * Memindahkan (move) folder beserta seluruh isinya ke lokasi lain.
+   * Menghapus folder, yang juga akan menghapus semua subfolder dan bookmark di dalamnya secara rekursif.
+* Manajemen Bookmark:
+   * Menyimpan tautan baru (bookmark) ke dalam folder/subfolder tertentu.
+   * Setiap bookmark memiliki judul (title) dan URL asli.
+   * Mengedit judul atau URL dari bookmark yang sudah ada.
+   * Memindahkan bookmark dari satu folder ke folder lain.
+   * Menghapus bookmark.
+* Tampilan:
+   * Menampilkan struktur folder dalam format pohon (tree view) yang bisa diperluas dan diciutkan (expand/collapse).
+   * Saat sebuah folder dipilih, kontennya (subfolder dan bookmark) akan ditampilkan di panel utama.
+2. Perubahan Desain Database (Skema SQLite)
+Untuk mengakomodasi struktur folder dan bookmark, kita perlu menambahkan dua tabel baru. Tabel users dan links yang sudah ada tidak perlu diubah.
+a. Tabel folders (BARU)
+Tabel ini akan menyimpan semua informasi folder dan subfolder. Kunci dari struktur bersarang (nested) ada pada kolom parent_id.
+Nama Kolom
+	Tipe Data
+	Keterangan
+	id
+	INTEGER
+	Primary Key, Auto Increment
+	name
+	TEXT
+	Nama folder yang ditampilkan
+	user_id
+	INTEGER
+	Foreign Key ke users(id), pemilik folder
+	parent_id
+	INTEGER
+	Foreign Key ke folders(id). Jika NULL, ini adalah folder root. Jika berisi ID folder lain, ini adalah subfolder.
+	b. Tabel bookmarks (BARU)
+Tabel ini khusus untuk menyimpan tautan yang di-bookmark oleh pengguna.
+Nama Kolom
+	Tipe Data
+	Keterangan
+	id
+	INTEGER
+	Primary Key, Auto Increment
+	title
+	TEXT
+	Judul bookmark agar mudah dikenali
+	original_url
+	TEXT
+	URL asli yang disimpan
+	folder_id
+	INTEGER
+	Foreign Key ke folders(id), menunjukkan di folder mana bookmark ini disimpan.
+	user_id
+	INTEGER
+	Foreign Key ke users(id), pemilik bookmark
+	created_at
+	DATETIME
+	Tanggal dan waktu pembuatan
+	3. Struktur API Baru (Tambahan Endpoint Admin)
+Semua endpoint baru ini harus dilindungi oleh middleware autentikasi JWT yang sudah ada.
+a. Rute untuk Folder
+* POST /api/admin/folders
+   * Fungsi: Membuat folder atau subfolder baru.
+   * Request Body: { "name": "Folder Belajar", "parentId": null } atau { "name": "Subfolder React", "parentId": 1 }
+   * Response Success: { "message": "Folder berhasil dibuat", "folder": { ... } }
+* GET /api/admin/bookmarks-tree
+   * Fungsi: Endpoint Kunci. Mengambil seluruh struktur folder dan bookmark milik pengguna dalam format pohon (nested JSON). Backend perlu melakukan query secara rekursif untuk membangun struktur ini.
+   * Response Success:
+[
+ {
+   "id": 1, "name": "Pekerjaan", "type": "folder",
+   "children": [
+     { "id": 2, "name": "Referensi Desain", "type": "folder", "children": [] },
+     { "id": 101, "title": "Dokumentasi API Internal", "url": "...", "type": "bookmark" }
+   ]
+ },
+ {
+   "id": 3, "name": "Belajar", "type": "folder",
+   "children": [
+     { "id": 102, "title": "Tutorial Node.js Lanjutan", "url": "...", "type": "bookmark" }
+   ]
+ }
+]
+
+   * PUT /api/admin/folders/:id
+   * Fungsi: Mengganti nama atau memindahkan folder.
+   * Request Body: { "name": "Nama Folder Baru" } atau { "newParentId": 2 }
+   * Response Success: { "message": "Folder berhasil diperbarui" }
+   * DELETE /api/admin/folders/:id
+   * Fungsi: Menghapus folder dan seluruh isinya.
+   * Response Success: { "message": "Folder berhasil dihapus" }
+b. Rute untuk Bookmark
+   * POST /api/admin/bookmarks
+   * Fungsi: Menambahkan bookmark baru ke dalam folder.
+   * Request Body: { "title": "Panduan Tailwind CSS", "url": "https://tailwindcss.com/docs", "folderId": 2 }
+   * Response Success: { "message": "Bookmark berhasil ditambahkan", "bookmark": { ... } }
+   * PUT /api/admin/bookmarks/:id
+   * Fungsi: Mengedit atau memindahkan bookmark.
+   * Request Body: { "title": "Judul Baru" } atau { "newFolderId": 3 }
+   * Response Success: { "message": "Bookmark berhasil diperbarui" }
+   * DELETE /api/admin/bookmarks/:id
+   * Fungsi: Menghapus bookmark.
+   * Response Success: { "message": "Bookmark berhasil dihapus" }
+4. Desain Antarmuka (Perubahan pada Dashboard Admin)
+   * Layout Utama: Tambahkan sebuah tab atau bagian baru di dashboard admin bernama "Bookmark Saya". Layout di bagian ini sebaiknya menggunakan dua panel:
+   * Panel Kiri (Navigasi Pohon Folder): Menampilkan semua folder dan subfolder dalam struktur pohon. Setiap item folder memiliki ikon (misal: ► atau ▼) untuk expand/collapse.
+   * Panel Kanan (Tampilan Konten): Menampilkan isi dari folder yang sedang dipilih di panel kiri. Kontennya adalah daftar subfolder dan bookmark.
+   * Elemen Interaktif:
+   * Tombol "Folder Baru" dan "Bookmark Baru" yang jelas. Saat diklik, akan muncul modal/pop-up untuk mengisi detail.
+   * Setiap item folder dan bookmark di panel kanan memiliki menu aksi (bisa berupa ikon titik tiga …) dengan pilihan: Rename/Edit, Move, dan Delete.
+   * Fungsi "Move" akan menampilkan modal berisi struktur pohon folder agar pengguna bisa memilih tujuan pemindahan dengan mudah.
+5. Alur Kerja Implementasi
+   1. Migrasi Database: Buat skrip untuk menambahkan tabel folders dan bookmarks baru ke dalam database SQLite yang sudah ada.
+   2. Pengembangan Backend:
+   * Implementasikan semua endpoint API baru yang telah dirancang di atas.
+   * Beri perhatian khusus pada endpoint GET /api/admin/bookmarks-tree karena memerlukan logika rekursif untuk membangun struktur JSON dari data relasional.
+   3. Pengembangan Frontend:
+   * Modifikasi halaman dashboard admin untuk menambahkan layout dua panel.
+   * Buat fungsi JavaScript untuk memanggil API bookmarks-tree dan secara dinamis merender struktur pohon folder di panel kiri.
+   * Buat logika untuk menangani interaksi pengguna: klik folder, expand/collapse, dan menampilkan konten di panel kanan.
+   * Implementasikan fungsionalitas untuk modal (create, edit, move) dan hubungkan dengan API yang sesuai.
+   4. Pengujian End-to-End: Uji semua alur kerja, mulai dari membuat folder, menambahkan bookmark, memindahkannya, hingga menghapusnya, untuk memastikan semuanya berjalan lancar.
