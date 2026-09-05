@@ -95,10 +95,8 @@ html.dark .hover\:bg-green-50:hover { background-color: #052e16; }
 html.dark #qrCodeContainer { background-color: #ffffff !important; }
 
 /* ===== Tombol toggle tema ===== */
-#themeToggle { background-color: #e5e7eb; color: #374151; }
-#themeToggle:hover { background-color: #d1d5db; }
-html.dark #themeToggle { background-color: #334155; color: #e2e8f0; }
-html.dark #themeToggle:hover { background-color: #475569; }
+/* Header kini gradient biru (selalu latar gelap) → tombol pakai bg-white/15
+   (Tailwind di markup) + ikon terang, cukup untuk light & dark. */
 
 /* ===== Quill editor (snow theme) ===== */
 html.dark .ql-toolbar.ql-snow { background-color: #1e293b; border-color: #334155; }

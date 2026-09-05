@@ -1,6 +1,15 @@
 /* ===== Dashboard Admin styles ===== */
 /* (diekstrak dari dashboard.html — jangan tambah Tailwind utility di sini) */
 
+/* Hover lift untuk kartu stats */
+#statsGrid .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#statsGrid .card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
 /* Markdown preview styling */
 #markdownPreview h1 {
     font-size: 1.75rem;

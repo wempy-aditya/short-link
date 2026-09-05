@@ -1,13 +1,11 @@
-// ===== Tab: Links — stats, tabel (server-side pagination/search/sort), CRUD =====
+// ===== Tab: Links — tabel (server-side pagination/search/sort), CRUD =====
 // Menggunakan window.App.apiRequest / showMessage / esc / createPager
+// Catatan: kartu statistik global (atas) di-load oleh app.js via /api/admin/stats
 
 (function () {
   const { apiRequest, showMessage, esc } = window.App;
 
   // Elemen DOM
-  const totalLinks = document.getElementById('totalLinks');
-  const totalClicks = document.getElementById('totalClicks');
-  const avgClicks = document.getElementById('avgClicks');
   const tableLoading = document.getElementById('tableLoading');
   const tableContainer = document.getElementById('tableContainer');
   const emptyState = document.getElementById('emptyState');
@@ -16,18 +14,6 @@
   const editModal = document.getElementById('editModal');
   const editForm = document.getElementById('editForm');
   const cancelEdit = document.getElementById('cancelEdit');
-
-  // ===== Statistik global (dari endpoint /stats — ringan, tidak muat semua link) =====
-  async function loadStats() {
-    try {
-      const stats = await apiRequest('/api/admin/links/stats');
-      totalLinks.textContent = stats.totalLinks;
-      totalClicks.textContent = stats.totalClicks;
-      avgClicks.textContent = stats.avgClicks;
-    } catch (error) {
-      showMessage(error.message, 'error');
-    }
-  }
 
   // Render tabel utk satu halaman
   function renderLinks(rows) {
@@ -55,7 +41,7 @@
                 </a>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${link.click_count > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'}">
                     ${link.click_count} klik
                 </span>
             </td>
@@ -96,10 +82,9 @@
     onError: (err) => showMessage(err.message, 'error'),
   });
 
-  // Load links + statistik (dipanggil app.js saat tab dibuka)
-  async function loadLinks() {
+  // Load links (dipanggil app.js saat tab dibuka); stats global di app.js
+  function loadLinks() {
     pager.reload(); // muat halaman 1
-    loadStats();
   }
 
   // Tambah tautan

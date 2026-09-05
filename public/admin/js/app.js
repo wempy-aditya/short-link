@@ -1,7 +1,29 @@
-// ===== App init: tab navigasi, logout, autentikasi awal =====
+// ===== App init: tab navigasi, logout, autentikasi awal, statistik global =====
 // Dimuat paling akhir setelah modul fitur (api, links, bookmarks, notes, markdown).
 
 (function () {
+  const { apiRequest, showMessage } = window.App;
+
+  // ===== Statistik global (kartu di atas, lintas semua tab) =====
+  // Endpoint /api/admin/stats — ringan (COUNT per tabel), sekali saat load.
+  async function loadGlobalStats() {
+    try {
+      const stats = await apiRequest('/api/admin/stats');
+      const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+      set('statTotalLinks', stats.totalLinks);
+      set('statTotalClicks', stats.totalClicks);
+      set('statAvgClicks', stats.avgClicks);
+      set('statTotalNotes', stats.totalNotes);
+      set('statTotalMarkdown', stats.totalMarkdown);
+      set('statTotalBookmarks', stats.totalBookmarks);
+    } catch (error) {
+      showMessage(error.message, 'error');
+    }
+  }
+
   // Logout
   document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.removeItem('adminToken');
@@ -70,4 +92,7 @@
     localStorage.getItem(STORAGE_KEY) ||
     DEFAULT_TAB;
   activateTab(initialTab);
+
+  // Muat statistik global kartu (di atas tab) — tidak tergantung tab aktif
+  loadGlobalStats();
 })();

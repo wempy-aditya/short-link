@@ -17,14 +17,15 @@
     return systemPrefersDark() ? 'dark' : 'light';
   }
 
-  // Update ikon (matahari = aktif light, bulan = aktif dark)
+  // Update ikon (matahari = aktif dark, bulan = aktif light) — selalu terang
+  // di header gradient biru.
   function updateIcon(theme) {
     const icon = document.querySelector('#themeToggle i');
     if (!icon) return;
     if (theme === 'dark') {
       icon.className = 'fas fa-sun text-yellow-300';
     } else {
-      icon.className = 'fas fa-moon text-gray-600';
+      icon.className = 'fas fa-moon text-white';
     }
   }
 
