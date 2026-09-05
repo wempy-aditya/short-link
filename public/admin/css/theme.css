@@ -9,11 +9,21 @@
 html.dark { color-scheme: dark; }
 
 /* ===== Surface dasar ===== */
-html.dark body { background-color: #0f172a; } /* slate-900 */
+html.dark body,
+html.dark body.bg-gray-50 { background-color: #0b1120; } /* lebih gelap dari card (#1e293b) → card menonjol */
 html.dark .bg-white { background-color: #1e293b; } /* slate-800 */
 html.dark .bg-gray-50 { background-color: #1e293b; }
 html.dark .bg-gray-100 { background-color: #334155; }
 html.dark .bg-gray-200 { background-color: #334155; }
+
+/* Card border di dark — slate-700 halus supaya edge terlihat */
+html.dark .bg-white.rounded-xl,
+html.dark .bg-white.rounded-2xl,
+html.dark .bg-white.rounded-xl.shadow-sm,
+html.dark .bg-white.rounded-2xl.shadow-sm {
+  border-color: #334155; /* slate-700 */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+}
 
 /* Gradient halaman publik & login */
 html.dark .bg-gradient-to-br {

@@ -97,7 +97,7 @@
       viewMarkdownDoc(docId);
     } else if (e.target.closest('.edit-md-doc')) {
       const docId = parseInt(e.target.closest('.edit-md-doc').dataset.docId, 10);
-      openMarkdownModal({ id: docId }); // lazy load detail di dalam modal
+      editMarkdownDoc(docId);
     } else if (e.target.closest('.read-md-doc')) {
       const docId = parseInt(e.target.closest('.read-md-doc').dataset.docId, 10);
       viewMarkdownDoc(docId);
@@ -126,6 +126,17 @@
       } else {
         markdownPreview.innerHTML = '<p class="text-gray-400 italic">Dokumen kosong</p>';
       }
+    } catch (error) {
+      showMessage(error.message, 'error');
+    }
+  }
+
+  // Edit: fetch detail lengkap dulu (list tidak bawa konten), lalu buka modal edit
+  async function editMarkdownDoc(docId) {
+    try {
+      const doc = await getMarkdownDetail(docId);
+      openMarkdownModal(doc);
+      switchToEdit();
     } catch (error) {
       showMessage(error.message, 'error');
     }

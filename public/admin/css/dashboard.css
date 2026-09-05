@@ -1,6 +1,19 @@
 /* ===== Dashboard Admin styles ===== */
 /* (diekstrak dari dashboard.html — jangan tambah Tailwind utility di sini) */
 
+/* ===== Batas card yang jelas (elegan, tidak menyatu dgn background) ===== */
+/* Card utama dashboard: rounded-xl / rounded-2xl + shadow-sm.
+   Kasih border tipis + shadow lebih tegas supaya edge card terlihat jelas
+   (terutama di dark mode di mana body & card sama-sama slate). */
+.dashboard-card,
+.bg-white.rounded-xl.shadow-sm,
+.bg-white.rounded-2xl.shadow-sm,
+.bg-white.rounded-xl,
+.bg-white.rounded-2xl {
+    border: 1px solid #e2e8f0; /* slate-200 */
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.06), 0 1px 2px -1px rgba(0,0,0,0.06);
+}
+
 /* Hover lift untuk kartu stats */
 #statsGrid .card-hover {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
