@@ -87,16 +87,36 @@ Buka **http://localhost:4000/admin/login** dan login dengan kredensial default.
 
 ```
 short-link/
-├── index.js              # Server utama Express + semua route API
-├── database.js           # Inisialisasi SQLite & skema tabel
+├── index.js              # Entry point (backward-compat) -> require('./src/server')
+├── src/                  # Kode aplikasi (modular)
+│   ├── server.js         # Entry server: inisialisasi DB + listen
+│   ├── app.js            # Assembly Express (middleware + mount semua route)
+│   ├── config.js         # Konfigurasi (PORT, JWT_SECRET, path)
+│   ├── db/
+│   │   ├── connection.js # Koneksi SQLite
+│   │   ├── queries.js    # Helper query promisified (async/await)
+│   │   └── init.js       # Skema tabel + seed admin
+│   ├── middleware/
+│   │   └── auth.js       # Autentikasi JWT (authenticateToken)
+│   ├── utils/
+│   │   ├── asyncHandler.js  # Wrapper route async
+│   │   └── validators.js    # Util validasi URL
+│   └── routes/           # 8 router terpisah per domain
+│       ├── public.routes.js    # GET /, POST /api/shorten, GET /:shortCode
+│       ├── auth.routes.js      # GET /admin/* + POST /api/admin/login
+│       ├── link.routes.js      # CRUD tautan  (/api/admin/links)
+│       ├── folder.routes.js    # CRUD folder  (/api/admin/folders)
+│       ├── bookmark.routes.js  # CRUD bookmark (/api/admin/bookmarks)
+│       ├── bookmarkTree.routes.js # Tree folder+bookmark (/api/admin/bookmarks-tree)
+│       ├── note.routes.js      # CRUD catatan  (/api/admin/notes)
+│       └── markdown.routes.js  # CRUD markdown (/api/admin/markdown)
 ├── package.json
 ├── shortlink.db          # File database SQLite (dibuat otomatis)
-├── public/
-│   ├── index.html        # Halaman publik pemendek tautan
-│   └── admin/
-│       ├── login.html    # Halaman login admin
-│       └── dashboard.html # Dashboard admin (SPA dengan tab navigasi)
-└── README.md
+└── public/
+    ├── index.html        # Halaman publik pemendek tautan
+    └── admin/
+        ├── login.html    # Halaman login admin
+        └── dashboard.html # Dashboard admin (SPA dengan tab navigasi)
 ```
 
 ---

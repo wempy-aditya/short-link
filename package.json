@@ -2,10 +2,10 @@
   "name": "short-link",
   "version": "1.0.0",
   "description": "Aplikasi Pemendek Tautan (URL Shortener) dengan Node.js dan SQLite",
-  "main": "index.js",
+  "main": "src/server.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js",
+    "dev": "node --watch src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
