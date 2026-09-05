@@ -168,7 +168,4 @@
 
   // Export API publik
   window.App.links = { loadLinks, editLink, deleteLink, showQrModal };
-
-  // Load pertama kali
-  loadLinks();
 })();

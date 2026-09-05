@@ -1,0 +1,127 @@
+/* ===== Dark mode theme =====
+   Aktif saat <html class="dark">. Bootstrap via inline script di <head> (anti-FOUC),
+   toggle via js/theme.js (tombol #themeToggle di header dashboard).
+   Berlaku untuk: admin/dashboard.html, admin/login.html, index.html.
+   Catatan: UI memakai Tailwind CDN dgn utility class hardcoded, jadi dark mode
+   diimplementasikan sebagai OVERRIDE class (bukan menulis ulang markup). */
+
+/* Native control & scrollbar ikut gelap */
+html.dark { color-scheme: dark; }
+
+/* ===== Surface dasar ===== */
+html.dark body { background-color: #0f172a; } /* slate-900 */
+html.dark .bg-white { background-color: #1e293b; } /* slate-800 */
+html.dark .bg-gray-50 { background-color: #1e293b; }
+html.dark .bg-gray-100 { background-color: #334155; }
+html.dark .bg-gray-200 { background-color: #334155; }
+
+/* Gradient halaman publik & login */
+html.dark .bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, #0f172a, #1e1b4b);
+}
+
+/* ===== Teks (gelap -> terang) ===== */
+html.dark .text-gray-900,
+html.dark .text-gray-800 { color: #f1f5f9; }
+html.dark .text-gray-700,
+html.dark .text-gray-600 { color: #cbd5e1; }
+html.dark .text-gray-500 { color: #94a3b8; }
+html.dark .text-gray-400 { color: #64748b; }
+html.dark .text-gray-300 { color: #475569; }
+
+/* Warna aksen -> versi lebih terang (kontras di bg gelap) */
+html.dark .text-blue-500,
+html.dark .text-blue-600,
+html.dark .text-blue-700,
+html.dark .text-blue-800,
+html.dark .hover\:text-blue-800:hover,
+html.dark .hover\:text-blue-900:hover { color: #60a5fa; }
+html.dark .text-green-500,
+html.dark .text-green-600,
+html.dark .text-green-700,
+html.dark .text-green-800,
+html.dark .hover\:text-green-800:hover { color: #4ade80; }
+html.dark .text-red-500,
+html.dark .text-red-600,
+html.dark .text-red-700,
+html.dark .text-red-900 { color: #f87171; }
+html.dark .text-indigo-600 { color: #a5b4fc; }
+html.dark .text-yellow-500,
+html.dark .text-yellow-600 { color: #fbbf24; }
+
+/* ===== Border ===== */
+html.dark .border-gray-200,
+html.dark .border-gray-300 { border-color: #334155; }
+html.dark .border-green-200 { border-color: #166534; }
+html.dark .border-red-200 { border-color: #7f1d1d; }
+html.dark .border-blue-300 { border-color: #1d4ed8; }
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: #334155; }
+
+/* ===== Form control ===== */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder { color: #64748b; }
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus { border-color: #3b82f6; }
+
+/* ===== Icon badge (lingkaran di stat cards & tombol aksi) ===== */
+html.dark .bg-blue-100 { background-color: #1e3a5f; }
+html.dark .bg-green-100 { background-color: #14532d; }
+html.dark .bg-purple-100 { background-color: #3b0764; }
+html.dark .bg-indigo-100 { background-color: #312e81; }
+html.dark .bg-yellow-100 { background-color: #713f12; }
+html.dark .bg-blue-50 { background-color: #172554; }
+html.dark .bg-green-50 { background-color: #052e16; }
+html.dark .bg-red-50 { background-color: #450a0a; }
+html.dark .bg-indigo-50 { background-color: #1e1b4b; }
+html.dark .bg-yellow-50 { background-color: #422006; }
+
+/* ===== Folder tree: hover & terpilih ===== */
+html.dark .hover\:bg-gray-100:hover { background-color: #334155; }
+html.dark .folder-item:hover { background-color: #334155; }
+html.dark .folder-item.bg-blue-100 { background-color: #1e3a5f; border-color: #1d4ed8; }
+
+/* ===== Drop zone markdown (hover hijau) ===== */
+html.dark .hover\:bg-green-50:hover { background-color: #052e16; }
+
+/* ===== QR container: WAJIB tetap terang agar QR terbaca ===== */
+html.dark #qrCodeContainer { background-color: #ffffff !important; }
+
+/* ===== Tombol toggle tema ===== */
+#themeToggle { background-color: #e5e7eb; color: #374151; }
+#themeToggle:hover { background-color: #d1d5db; }
+html.dark #themeToggle { background-color: #334155; color: #e2e8f0; }
+html.dark #themeToggle:hover { background-color: #475569; }
+
+/* ===== Quill editor (snow theme) ===== */
+html.dark .ql-toolbar.ql-snow { background-color: #1e293b; border-color: #334155; }
+html.dark .ql-container.ql-snow { background-color: #0f172a; border-color: #334155; }
+html.dark .ql-editor { color: #e2e8f0; }
+html.dark .ql-editor.ql-blank::before { color: #64748b; }
+html.dark .ql-snow .ql-stroke { stroke: #cbd5e1; }
+html.dark .ql-snow .ql-fill { fill: #cbd5e1; }
+html.dark .ql-snow .ql-picker { color: #cbd5e1; }
+html.dark .ql-snow .ql-picker-options { background-color: #1e293b; border-color: #334155; }
+
+/* ===== Markdown preview (warna hardcoded terang di dashboard.css) ===== */
+html.dark #markdownPreview h1,
+html.dark #markdownPreview h2,
+html.dark #markdownPreview h3,
+html.dark #markdownPreview h4 { color: #e2e8f0; }
+html.dark #markdownPreview h2 { border-bottom-color: #334155; }
+html.dark #markdownPreview blockquote { background: #0f172a; color: #86efac; }
+html.dark #markdownPreview code { background: #334155; color: #f9a8d4; }
+html.dark #markdownPreview pre { background: #0b1120; color: #e2e8f0; }
+html.dark #markdownPreview a { color: #60a5fa; }
+html.dark #markdownPreview th { background: #1e293b; }
+html.dark #markdownPreview th,
+html.dark #markdownPreview td { border-color: #334155; }
+html.dark #markdownPreview hr { border-top-color: #334155; }
+html.dark #markdownPreview img { opacity: 0.9; }
