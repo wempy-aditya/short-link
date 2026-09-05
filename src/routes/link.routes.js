@@ -5,16 +5,52 @@ const { nanoid } = require('nanoid');
 const { all, get, run } = require('../db/queries');
 const { authenticateToken } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
+const { runPaginated } = require('../utils/paginate');
 
 const router = express.Router();
 
 // Semua route link butuh auth
 router.use(authenticateToken);
 
-// Ambil semua tautan + statistik
+// Ambil semua tautan + statistik (tanpa query param -> array penuh, kompat mode lama)
 router.get('/', asyncHandler(async (req, res) => {
-  const rows = await all('SELECT * FROM links ORDER BY created_at DESC');
-  res.json(rows);
+  const hasPaging = req.query.page !== undefined || req.query.pageSize !== undefined;
+
+  // Tanpa param pagination: kembalikan array penuh (perilaku lama) — dipakai
+  // dashboard utk statistik & hal lain yang butuh semua data.
+  if (!hasPaging) {
+    const rows = await all('SELECT * FROM links ORDER BY created_at DESC');
+    return res.json(rows);
+  }
+
+  const data = await runPaginated(require('../db/queries'), {
+    table: 'links',
+    columns: '*',
+    searchCols: ['original_url', 'short_code'],
+    allowedSortMap: {
+      created_at: 'created_at',
+      click_count: 'click_count',
+      original_url: 'original_url',
+    },
+    defaultSort: 'created_at',
+    q: req.query.search || '',
+    sort: req.query.sort || '',
+    order: req.query.order || '',
+    page: parseInt(req.query.page, 10) || 1,
+    pageSize: parseInt(req.query.pageSize, 10) || 10,
+  });
+
+  res.json(data);
+}));
+
+// Statistik global (Total Tautan, Total Klik, Rata-rata) — dipakai kartu dashboard
+router.get('/stats', asyncHandler(async (req, res) => {
+  const row = await get('SELECT COUNT(*) AS total, COALESCE(SUM(click_count),0) AS clicks FROM links');
+  res.json({
+    totalLinks: row.total,
+    totalClicks: row.clicks,
+    avgClicks: row.total > 0 ? Math.round(row.clicks / row.total) : 0,
+  });
 }));
 
 // Buat tautan pendek baru (bisa custom alias)

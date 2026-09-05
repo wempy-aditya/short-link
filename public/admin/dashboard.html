@@ -162,11 +162,26 @@
 
             <!-- Links Table -->
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
                     <h2 class="text-xl font-bold text-gray-800">
                         <i class="fas fa-list text-blue-600 mr-2"></i>
                         Daftar Tautan
                     </h2>
+                    <!-- Toolbar: search + sort -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                            <input type="text" id="linkSearch" placeholder="Cari URL / alias..."
+                                class="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-56">
+                        </div>
+                        <select id="linkSort"
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="created_at|desc">Terbaru</option>
+                            <option value="created_at|asc">Terlama</option>
+                            <option value="click_count|desc">Klik Terbanyak</option>
+                            <option value="original_url|asc">URL (A-Z)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Loading State -->
@@ -206,6 +221,21 @@
                             <!-- Table rows will be inserted here -->
                         </tbody>
                     </table>
+                    <!-- Pagination -->
+                    <div class="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+                        <span id="linkInfo" class="text-sm text-gray-500">Menampilkan data</span>
+                        <div class="flex items-center gap-2">
+                            <button id="linkPrev"
+                                class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                <i class="fas fa-chevron-left mr-1"></i>Prev
+                            </button>
+                            <span id="linkPageLabel" class="text-sm text-gray-600 min-w-[90px] text-center">Hal 1</span>
+                            <button id="linkNext"
+                                class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                                Next<i class="fas fa-chevron-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Empty State -->
@@ -279,16 +309,29 @@
     <!-- Notes Tab Content -->
     <div id="notes-tab" class="tab-content hidden">
         <div class="bg-white rounded-xl shadow-sm p-6">
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
                 <h2 class="text-lg font-bold text-gray-800">
                     <i class="fas fa-note-sticky text-indigo-600 mr-2"></i>
                     Catatan
                 </h2>
-                <button id="addNoteBtn"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-sm transition-colors duration-200">
-                    <i class="fas fa-plus mr-1"></i>
-                    Catatan
-                </button>
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="noteSearch" placeholder="Cari judul catatan..."
+                            class="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-56">
+                    </div>
+                    <select id="noteSort"
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <option value="updated_at|desc">Terbaru diubah</option>
+                        <option value="created_at|desc">Terbaru dibuat</option>
+                        <option value="title|asc">Judul (A-Z)</option>
+                    </select>
+                    <button id="addNoteBtn"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-sm transition-colors duration-200">
+                        <i class="fas fa-plus mr-1"></i>
+                        Catatan
+                    </button>
+                </div>
             </div>
 
             <div id="notesLoading" class="text-center py-10 hidden">
@@ -297,6 +340,22 @@
             </div>
 
             <div id="notesList" class="space-y-4"></div>
+
+            <!-- Pagination Notes -->
+            <div id="notesPager" class="hidden mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
+                <span id="noteInfo" class="text-sm text-gray-500">Menampilkan data</span>
+                <div class="flex items-center gap-2">
+                    <button id="notePrev"
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                        <i class="fas fa-chevron-left mr-1"></i>Prev
+                    </button>
+                    <span id="notePageLabel" class="text-sm text-gray-600 min-w-[90px] text-center">Hal 1</span>
+                    <button id="noteNext"
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                        Next<i class="fas fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
 
             <div id="notesEmpty" class="hidden text-center py-10">
                 <i class="fas fa-note-sticky text-gray-300 text-4xl mb-3"></i>
@@ -314,7 +373,18 @@
                     <i class="fas fa-file-code text-green-600 mr-2"></i>
                     Dokumen Markdown
                 </h2>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="mdSearch" placeholder="Cari judul dokumen..."
+                            class="pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent w-56">
+                    </div>
+                    <select id="mdSort"
+                        class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="updated_at|desc">Terbaru diubah</option>
+                        <option value="created_at|desc">Terbaru dibuat</option>
+                        <option value="title|asc">Judul (A-Z)</option>
+                    </select>
                     <label for="mdFileUpload"
                         class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded-lg text-sm transition-colors duration-200 cursor-pointer">
                         <i class="fas fa-upload mr-1"></i>
@@ -343,6 +413,22 @@
             </div>
 
             <div id="markdownList" class="space-y-3"></div>
+
+            <!-- Pagination Markdown -->
+            <div id="mdPager" class="hidden mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
+                <span id="mdInfo" class="text-sm text-gray-500">Menampilkan data</span>
+                <div class="flex items-center gap-2">
+                    <button id="mdPrev"
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                        <i class="fas fa-chevron-left mr-1"></i>Prev
+                    </button>
+                    <span id="mdPageLabel" class="text-sm text-gray-600 min-w-[90px] text-center">Hal 1</span>
+                    <button id="mdNext"
+                        class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                        Next<i class="fas fa-chevron-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
 
             <div id="markdownEmpty" class="hidden text-center py-10">
                 <i class="fas fa-file-alt text-gray-300 text-4xl mb-3"></i>
@@ -600,6 +686,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/admin/js/api.js"></script>
 <script src="/admin/js/theme.js"></script>
+<script src="/admin/js/pager.js"></script>
 <script src="/admin/js/links.js"></script>
 <script src="/admin/js/bookmarks.js"></script>
 <script src="/admin/js/notes.js"></script>

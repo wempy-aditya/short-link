@@ -1,5 +1,7 @@
 // ===== Tab: Markdown — CRUD dokumen + upload .md + drag & drop =====
-// Menggunakan window.App.state / apiRequest / showMessage / esc
+// List: server-side pagination/search/sort (ringan, tanpa konten).
+// Edit/Read: fetch detail via GET /api/admin/markdown/:id (lazy load).
+// Menggunakan window.App.state / apiRequest / showMessage / esc / createPager
 
 (function () {
   const { state, apiRequest, showMessage, esc } = window.App;
@@ -24,64 +26,68 @@
   const closeMarkdownModal = document.getElementById('closeMarkdownModal');
   const cancelMarkdown = document.getElementById('cancelMarkdown');
 
-  async function loadMarkdownDocs() {
-    try {
-      markdownLoading.classList.remove('hidden');
-      markdownList.innerHTML = '';
-      markdownEmpty.classList.add('hidden');
-
-      state.markdownDocs = await apiRequest('/api/admin/markdown');
-      renderMarkdownDocs();
-    } catch (error) {
-      showMessage(error.message, 'error');
-    } finally {
-      markdownLoading.classList.add('hidden');
-    }
-  }
-
-  function renderMarkdownDocs() {
-    if (!state.markdownDocs || state.markdownDocs.length === 0) {
+  // Render list utk satu halaman (dari { rows } server — preview dibentuk dari konten scrub)
+  function renderMarkdownDocs(rows) {
+    if (!rows || rows.length === 0) {
       markdownList.innerHTML = '';
       markdownEmpty.classList.remove('hidden');
+      document.getElementById('mdPager').classList.add('hidden');
       return;
     }
 
     markdownEmpty.classList.add('hidden');
-    markdownList.innerHTML = state.markdownDocs
-      .map((doc) => {
-        const mdText = doc.content_md || '';
-        const preview = mdText
-          ? mdText.replace(/[#*>_\-\[\]\(\)\n\r`~]/g, ' ').substring(0, 150)
-          : '(kosong)';
-        return `
-          <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow cursor-pointer md-doc-view"
-               data-doc-id="${doc.id}">
-              <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                      <h3 class="font-semibold text-gray-900 mb-1">
-                          <i class="fas fa-file-alt text-green-600 mr-2"></i>${esc(doc.title)}
-                      </h3>
-                      <p class="text-sm text-gray-500 truncate">${esc(preview)}</p>
-                      <p class="text-xs text-gray-400 mt-2">
-                          Diperbarui: ${new Date(doc.updated_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                  </div>
-                  <div class="flex space-x-2 ml-4">
-                      <button class="text-blue-500 hover:text-blue-700 edit-md-doc" data-doc-id="${doc.id}" title="Edit">
-                          <i class="fas fa-edit"></i>
-                      </button>
-                      <button class="text-green-600 hover:text-green-800 read-md-doc" data-doc-id="${doc.id}" title="Baca">
-                          <i class="fas fa-book-open"></i>
-                      </button>
-                      <button class="text-red-500 hover:text-red-700 delete-md-doc" data-doc-id="${doc.id}" title="Hapus">
-                          <i class="fas fa-trash"></i>
-                      </button>
-                  </div>
+    document.getElementById('mdPager').classList.remove('hidden');
+
+    markdownList.innerHTML = rows.map((doc) => `
+      <div class="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow cursor-pointer md-doc-view"
+           data-doc-id="${doc.id}">
+          <div class="flex items-start justify-between">
+              <div class="flex-1">
+                  <h3 class="font-semibold text-gray-900 mb-1">
+                      <i class="fas fa-file-alt text-green-600 mr-2"></i>${esc(doc.title)}
+                  </h3>
+                  <p class="text-xs text-gray-400 mt-1">
+                      Diperbarui: ${new Date(doc.updated_at).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+              </div>
+              <div class="flex space-x-2 ml-4">
+                  <button class="text-blue-500 hover:text-blue-700 edit-md-doc" data-doc-id="${doc.id}" title="Edit">
+                      <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="text-green-600 hover:text-green-800 read-md-doc" data-doc-id="${doc.id}" title="Baca">
+                      <i class="fas fa-book-open"></i>
+                  </button>
+                  <button class="text-red-500 hover:text-red-700 delete-md-doc" data-doc-id="${doc.id}" title="Hapus">
+                      <i class="fas fa-trash"></i>
+                  </button>
               </div>
           </div>
-        `;
-      })
-      .join('');
+      </div>
+    `).join('');
+  }
+
+  // Pager utk dokumen
+  const pager = window.App.createPager({
+    searchInput: document.getElementById('mdSearch'),
+    sortSelect: document.getElementById('mdSort'),
+    infoEl: document.getElementById('mdInfo'),
+    prevBtn: document.getElementById('mdPrev'),
+    nextBtn: document.getElementById('mdNext'),
+    pageLabel: document.getElementById('mdPageLabel'),
+    pageSize: 10,
+    defaultSort: 'updated_at',
+    defaultOrder: 'desc',
+    fetchPage: (query) => apiRequest(`/api/admin/markdown?${query}`),
+    render: renderMarkdownDocs,
+    onLoading: (loading) => {
+      markdownLoading.classList.toggle('hidden', !loading);
+    },
+    onError: (err) => showMessage(err.message, 'error'),
+  });
+
+  // Load dokumen halaman 1 (dipanggil app.js saat tab dibuka)
+  function loadMarkdownDocs() {
+    pager.reload();
   }
 
   // Klik card / tombol di daftar dokumen
@@ -91,8 +97,7 @@
       viewMarkdownDoc(docId);
     } else if (e.target.closest('.edit-md-doc')) {
       const docId = parseInt(e.target.closest('.edit-md-doc').dataset.docId, 10);
-      const doc = state.markdownDocs.find((d) => d.id === docId);
-      if (doc) openMarkdownModal(doc);
+      openMarkdownModal({ id: docId }); // lazy load detail di dalam modal
     } else if (e.target.closest('.read-md-doc')) {
       const docId = parseInt(e.target.closest('.read-md-doc').dataset.docId, 10);
       viewMarkdownDoc(docId);
@@ -104,22 +109,34 @@
 
   // ===== Modal & mode edit/preview =====
 
-  function viewMarkdownDoc(docId) {
-    const doc = state.markdownDocs.find((d) => d.id === docId);
-    if (!doc) return;
-    openMarkdownModal(doc);
-    switchToPreview();
-    if (markdownContent.value.trim()) {
-      markdownPreview.innerHTML = marked.parse(markdownContent.value);
+  async function getMarkdownDetail(id) {
+    // Kalau sudah punya konten lengkap (baru dibuat/upload), pakai langsung
+    const existing = state.markdownDocs ? state.markdownDocs.find((d) => d.id === id) : null;
+    if (existing && existing.content_md !== undefined) return existing;
+    return apiRequest(`/api/admin/markdown/${id}`);
+  }
+
+  async function viewMarkdownDoc(docId) {
+    try {
+      const doc = await getMarkdownDetail(docId);
+      openMarkdownModal(doc);
+      switchToPreview();
+      if (doc.content_md) {
+        markdownPreview.innerHTML = marked.parse(doc.content_md);
+      } else {
+        markdownPreview.innerHTML = '<p class="text-gray-400 italic">Dokumen kosong</p>';
+      }
+    } catch (error) {
+      showMessage(error.message, 'error');
     }
   }
 
   function openMarkdownModal(doc = null) {
     state.editingMarkdownDoc = doc;
-    markdownModalTitle.textContent = doc ? doc.title : 'Tulis Markdown';
-    markdownTitle.value = doc ? doc.title : '';
-    markdownContent.value = doc ? doc.content_md || '' : '';
-    markdownDocId.value = doc ? doc.id : '';
+    markdownModalTitle.textContent = doc ? (doc.title || 'Edit Dokumen') : 'Tulis Markdown';
+    markdownTitle.value = doc ? (doc.title || '') : '';
+    markdownContent.value = doc ? (doc.content_md || '') : '';
+    markdownDocId.value = doc ? (doc.id || '') : '';
 
     switchToEdit();
     markdownModal.classList.remove('hidden');

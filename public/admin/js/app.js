@@ -27,6 +27,10 @@
     'markdown-tab': () => window.App.markdown.loadMarkdownDocs(),
   };
 
+  // Tab yang sudah pernah di-load (lazy load SEKALI saja) — state pager
+  // (halaman/search/sort) tetap dipertahankan saat pindah-pindah tab.
+  const loadedTabs = new Set();
+
   // Tampilkan tab tertentu + set state tombol
   function activateTab(tabId) {
     if (!VALID_TABS.includes(tabId)) tabId = DEFAULT_TAB;
@@ -43,9 +47,12 @@
       content.classList.toggle('hidden', content.id !== tabId);
     });
 
-    // Muat data untuk tab yang aktif
-    const load = loaders[tabId];
-    if (load) load();
+    // Muat data hanya saat tab pertama kali dibuka
+    if (!loadedTabs.has(tabId)) {
+      loadedTabs.add(tabId);
+      const load = loaders[tabId];
+      if (load) load();
+    }
   }
 
   // Klik tab -> aktifkan + simpan (localStorage + URL hash tanpa reload)

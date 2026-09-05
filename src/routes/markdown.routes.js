@@ -4,21 +4,48 @@ const { body, validationResult } = require('express-validator');
 const { all, get, run } = require('../db/queries');
 const { authenticateToken } = require('../middleware/auth');
 const asyncHandler = require('../utils/asyncHandler');
+const { runPaginated } = require('../utils/paginate');
 
 const router = express.Router();
 
 router.use(authenticateToken);
 
-// Ambil semua dokumen markdown
+// Ambil dokumen: tanpa query param -> array penuh (kompat mode lama, tanpa konten berat);
+// dengan page/pageSize -> { rows, total, ... } (server-side pagination/search/sort)
 router.get('/', asyncHandler(async (req, res) => {
-  const docs = await all(
-    `SELECT id, title, content_md, content_html, created_at, updated_at
-     FROM markdown_docs
-     WHERE user_id = ?
-     ORDER BY updated_at DESC`,
-    [req.user.id]
-  );
-  res.json(docs);
+  const hasPaging = req.query.page !== undefined || req.query.pageSize !== undefined;
+
+  if (!hasPaging) {
+    const docs = await all(
+      `SELECT id, title, created_at, updated_at
+       FROM markdown_docs
+       WHERE user_id = ?
+       ORDER BY updated_at DESC`,
+      [req.user.id]
+    );
+    return res.json(docs);
+  }
+
+  const data = await runPaginated(require('../db/queries'), {
+    table: 'markdown_docs',
+    columns: 'id, title, created_at, updated_at',
+    searchCols: ['title'],
+    allowedSortMap: {
+      updated_at: 'updated_at',
+      created_at: 'created_at',
+      title: 'title',
+    },
+    defaultSort: 'updated_at',
+    baseWhere: 'user_id = ?',
+    baseParams: [req.user.id],
+    q: req.query.search || '',
+    sort: req.query.sort || '',
+    order: req.query.order || '',
+    page: parseInt(req.query.page, 10) || 1,
+    pageSize: parseInt(req.query.pageSize, 10) || 10,
+  });
+
+  res.json(data);
 }));
 
 // Ambil satu dokumen lengkap
