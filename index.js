@@ -68,35 +68,35 @@ app.post('/api/shorten', [
     }
 
     const { url } = req.body;
-    
+
     // Wait for nanoid to be loaded
     if (!nanoid) {
         return res.status(500).json({ error: 'Server sedang memuat, coba lagi sebentar' });
     }
-    
+
     const shortCode = nanoid(8);
-    
+
     db.run(
         'INSERT INTO links (original_url, short_code) VALUES (?, ?)',
         [url, shortCode],
-        function(err) {
+        function (err) {
             if (err) {
                 console.error('Database error:', err);
                 return res.status(500).json({ error: 'Gagal menyimpan tautan' });
             }
-            
-             res.json({
-                 shortUrl: `${req.protocol}://${req.get('host')}/${shortCode}`,
-                 shortCode: shortCode
-             });
-         }
-     );
+
+            res.json({
+                shortUrl: `${req.protocol}://${req.get('host')}/${shortCode}`,
+                shortCode: shortCode
+            });
+        }
+    );
 });
 
 // Redirect tautan pendek ke URL asli
 app.get('/:shortCode', (req, res) => {
     const { shortCode } = req.params;
-    
+
     // Skip jika ini adalah rute admin atau API
     if (shortCode === 'admin' || shortCode === 'api') {
         return res.status(404).send('Not Found');
@@ -107,14 +107,14 @@ app.get('/:shortCode', (req, res) => {
             console.error('Database error:', err);
             return res.status(500).send('Server Error');
         }
-        
+
         if (!row) {
             return res.status(404).send('Tautan tidak ditemukan');
         }
 
         // Update click count
         db.run('UPDATE links SET click_count = click_count + 1 WHERE id = ?', [row.id]);
-        
+
         // Redirect ke URL asli
         res.redirect(301, row.original_url);
     });
@@ -171,7 +171,7 @@ app.get('/api/admin/links', authenticateToken, (req, res) => {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Terjadi kesalahan server' });
         }
-        
+
         res.json(rows);
     });
 });
@@ -186,14 +186,14 @@ app.post('/api/admin/links', authenticateToken, [
     }
 
     const { url, customAlias } = req.body;
-    
+
     // Wait for nanoid to be loaded
     if (!nanoid) {
         return res.status(500).json({ error: 'Server sedang memuat, coba lagi sebentar' });
     }
-    
+
     let shortCode = customAlias || nanoid(8);
-    
+
     // Check if custom alias already exists
     if (customAlias) {
         const existing = await new Promise((resolve, reject) => {
@@ -202,21 +202,21 @@ app.post('/api/admin/links', authenticateToken, [
                 else resolve(row);
             });
         });
-        
+
         if (existing) {
             return res.status(400).json({ error: 'Alias sudah digunakan' });
         }
     }
-    
+
     db.run(
         'INSERT INTO links (original_url, short_code) VALUES (?, ?)',
         [url, shortCode],
-        function(err) {
+        function (err) {
             if (err) {
                 console.error('Database error:', err);
                 return res.status(500).json({ error: 'Gagal menyimpan tautan' });
             }
-            
+
             res.json({
                 id: this.lastID,
                 shortUrl: `${req.protocol}://${req.get('host')}/${shortCode}`,
@@ -239,7 +239,7 @@ app.put('/api/admin/links/:id', authenticateToken, [
     const { id } = req.params;
     const { originalUrl } = req.body;
 
-    db.run('UPDATE links SET original_url = ? WHERE id = ?', [originalUrl, id], function(err) {
+    db.run('UPDATE links SET original_url = ? WHERE id = ?', [originalUrl, id], function (err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Terjadi kesalahan server' });
@@ -257,7 +257,7 @@ app.put('/api/admin/links/:id', authenticateToken, [
 app.delete('/api/admin/links/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
 
-    db.run('DELETE FROM links WHERE id = ?', [id], function(err) {
+    db.run('DELETE FROM links WHERE id = ?', [id], function (err) {
         if (err) {
             console.error('Database error:', err);
             return res.status(500).json({ error: 'Terjadi kesalahan server' });
@@ -281,7 +281,7 @@ app.get('/api/admin/folders', authenticateToken, (req, res) => {
         WHERE user_id = ? 
         ORDER BY name ASC
     `;
-    
+
     db.all(query, [req.user.id], (err, folders) => {
         if (err) {
             console.error('Error fetching folders:', err);
@@ -297,7 +297,7 @@ app.post('/api/admin/folders', authenticateToken, [
     body('parent_id').optional({ nullable: true }).isInt().withMessage('Parent ID harus berupa angka')
 ], (req, res) => {
     console.log('POST /api/admin/folders - Request body:', req.body);
-    
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         console.log('Validation errors:', errors.array());
@@ -305,7 +305,7 @@ app.post('/api/admin/folders', authenticateToken, [
     }
 
     const { name, parent_id } = req.body;
-    
+
     // Jika parent_id ada, pastikan folder parent milik user yang sama
     if (parent_id) {
         const checkParentQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
@@ -314,35 +314,35 @@ app.post('/api/admin/folders', authenticateToken, [
                 console.error('Error checking parent folder:', err);
                 return res.status(500).json({ error: 'Gagal memeriksa folder parent' });
             }
-            
+
             if (!parentFolder) {
                 console.log('Parent folder not found:', parent_id);
                 return res.status(400).json({ error: 'Folder parent tidak ditemukan' });
             }
-            
+
             // Insert folder baru
             insertFolder();
         });
     } else {
         insertFolder();
     }
-    
+
     function insertFolder() {
         const insertQuery = `
             INSERT INTO folders (name, user_id, parent_id) 
             VALUES (?, ?, ?)
         `;
-        
+
         console.log('Inserting folder:', { name, user_id: req.user.id, parent_id: parent_id || null });
-        
-        db.run(insertQuery, [name, req.user.id, parent_id || null], function(err) {
+
+        db.run(insertQuery, [name, req.user.id, parent_id || null], function (err) {
             if (err) {
                 console.error('Error creating folder:', err);
                 return res.status(500).json({ error: 'Gagal membuat folder' });
             }
-            
+
             console.log('Folder created successfully with ID:', this.lastID);
-            
+
             res.status(201).json({
                 id: this.lastID,
                 name,
@@ -365,7 +365,7 @@ app.put('/api/admin/folders/:id', authenticateToken, [
 
     const folderId = req.params.id;
     const { name, parent_id } = req.body;
-    
+
     // Pastikan folder milik user yang sedang login
     const checkOwnerQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
     db.get(checkOwnerQuery, [folderId, req.user.id], (err, folder) => {
@@ -373,51 +373,51 @@ app.put('/api/admin/folders/:id', authenticateToken, [
             console.error('Error checking folder ownership:', err);
             return res.status(500).json({ error: 'Gagal memeriksa kepemilikan folder' });
         }
-        
+
         if (!folder) {
             return res.status(404).json({ error: 'Folder tidak ditemukan' });
         }
-        
+
         // Jika parent_id ada, pastikan folder parent milik user yang sama dan bukan dirinya sendiri
         if (parent_id) {
             if (parent_id == folderId) {
                 return res.status(400).json({ error: 'Folder tidak bisa menjadi parent dari dirinya sendiri' });
             }
-            
+
             const checkParentQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
             db.get(checkParentQuery, [parent_id, req.user.id], (err, parentFolder) => {
                 if (err) {
                     console.error('Error checking parent folder:', err);
                     return res.status(500).json({ error: 'Gagal memeriksa folder parent' });
                 }
-                
+
                 if (!parentFolder) {
                     return res.status(400).json({ error: 'Folder parent tidak ditemukan' });
                 }
-                
+
                 updateFolder();
             });
         } else {
             updateFolder();
         }
-        
+
         function updateFolder() {
             const updateQuery = `
                 UPDATE folders 
                 SET name = ?, parent_id = ? 
                 WHERE id = ? AND user_id = ?
             `;
-            
-            db.run(updateQuery, [name, parent_id || null, folderId, req.user.id], function(err) {
+
+            db.run(updateQuery, [name, parent_id || null, folderId, req.user.id], function (err) {
                 if (err) {
                     console.error('Error updating folder:', err);
                     return res.status(500).json({ error: 'Gagal mengupdate folder' });
                 }
-                
+
                 if (this.changes === 0) {
                     return res.status(404).json({ error: 'Folder tidak ditemukan' });
                 }
-                
+
                 res.json({ message: 'Folder berhasil diupdate' });
             });
         }
@@ -427,7 +427,7 @@ app.put('/api/admin/folders/:id', authenticateToken, [
 // DELETE /api/admin/folders/:id - Menghapus folder
 app.delete('/api/admin/folders/:id', authenticateToken, (req, res) => {
     const folderId = req.params.id;
-    
+
     // Pastikan folder milik user yang sedang login
     const checkOwnerQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
     db.get(checkOwnerQuery, [folderId, req.user.id], (err, folder) => {
@@ -435,23 +435,23 @@ app.delete('/api/admin/folders/:id', authenticateToken, (req, res) => {
             console.error('Error checking folder ownership:', err);
             return res.status(500).json({ error: 'Gagal memeriksa kepemilikan folder' });
         }
-        
+
         if (!folder) {
             return res.status(404).json({ error: 'Folder tidak ditemukan' });
         }
-        
+
         // Hapus folder (CASCADE akan menghapus subfolder dan bookmark)
         const deleteQuery = 'DELETE FROM folders WHERE id = ? AND user_id = ?';
-        db.run(deleteQuery, [folderId, req.user.id], function(err) {
+        db.run(deleteQuery, [folderId, req.user.id], function (err) {
             if (err) {
                 console.error('Error deleting folder:', err);
                 return res.status(500).json({ error: 'Gagal menghapus folder' });
             }
-            
+
             if (this.changes === 0) {
                 return res.status(404).json({ error: 'Folder tidak ditemukan' });
             }
-            
+
             res.json({ message: 'Folder berhasil dihapus' });
         });
     });
@@ -462,7 +462,7 @@ app.delete('/api/admin/folders/:id', authenticateToken, (req, res) => {
 // GET /api/admin/bookmarks - Mendapatkan semua bookmark
 app.get('/api/admin/bookmarks', authenticateToken, (req, res) => {
     const folderId = req.query.folder_id;
-    
+
     let query = `
         SELECT b.id, b.title, b.original_url, b.folder_id, b.created_at,
                f.name as folder_name
@@ -470,17 +470,17 @@ app.get('/api/admin/bookmarks', authenticateToken, (req, res) => {
         LEFT JOIN folders f ON b.folder_id = f.id
         WHERE b.user_id = ?
     `;
-    
+
     const params = [req.user.id];
-    
+
     // Add folder filter if folder_id is provided
     if (folderId) {
         query += ' AND b.folder_id = ?';
         params.push(folderId);
     }
-    
+
     query += ' ORDER BY b.title ASC';
-    
+
     db.all(query, params, (err, bookmarks) => {
         if (err) {
             console.error('Error fetching bookmarks:', err);
@@ -502,7 +502,7 @@ app.post('/api/admin/bookmarks', authenticateToken, [
     }
 
     const { title, original_url, folder_id } = req.body;
-    
+
     // Pastikan folder milik user yang sedang login
     const checkFolderQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
     db.get(checkFolderQuery, [folder_id, req.user.id], (err, folder) => {
@@ -510,23 +510,23 @@ app.post('/api/admin/bookmarks', authenticateToken, [
             console.error('Error checking folder ownership:', err);
             return res.status(500).json({ error: 'Gagal memeriksa folder' });
         }
-        
+
         if (!folder) {
             return res.status(400).json({ error: 'Folder tidak ditemukan' });
         }
-        
+
         // Insert bookmark baru
         const insertQuery = `
             INSERT INTO bookmarks (title, original_url, folder_id, user_id) 
             VALUES (?, ?, ?, ?)
         `;
-        
-        db.run(insertQuery, [title, original_url, folder_id, req.user.id], function(err) {
+
+        db.run(insertQuery, [title, original_url, folder_id, req.user.id], function (err) {
             if (err) {
                 console.error('Error creating bookmark:', err);
                 return res.status(500).json({ error: 'Gagal membuat bookmark' });
             }
-            
+
             res.status(201).json({
                 id: this.lastID,
                 title,
@@ -551,7 +551,7 @@ app.put('/api/admin/bookmarks/:id', authenticateToken, [
 
     const bookmarkId = req.params.id;
     const { title, original_url, folder_id } = req.body;
-    
+
     // Pastikan bookmark milik user yang sedang login
     const checkOwnerQuery = 'SELECT id FROM bookmarks WHERE id = ? AND user_id = ?';
     db.get(checkOwnerQuery, [bookmarkId, req.user.id], (err, bookmark) => {
@@ -559,11 +559,11 @@ app.put('/api/admin/bookmarks/:id', authenticateToken, [
             console.error('Error checking bookmark ownership:', err);
             return res.status(500).json({ error: 'Gagal memeriksa kepemilikan bookmark' });
         }
-        
+
         if (!bookmark) {
             return res.status(404).json({ error: 'Bookmark tidak ditemukan' });
         }
-        
+
         // Pastikan folder milik user yang sedang login
         const checkFolderQuery = 'SELECT id FROM folders WHERE id = ? AND user_id = ?';
         db.get(checkFolderQuery, [folder_id, req.user.id], (err, folder) => {
@@ -571,28 +571,28 @@ app.put('/api/admin/bookmarks/:id', authenticateToken, [
                 console.error('Error checking folder ownership:', err);
                 return res.status(500).json({ error: 'Gagal memeriksa folder' });
             }
-            
+
             if (!folder) {
                 return res.status(400).json({ error: 'Folder tidak ditemukan' });
             }
-            
+
             // Update bookmark
             const updateQuery = `
                 UPDATE bookmarks 
                 SET title = ?, original_url = ?, folder_id = ? 
                 WHERE id = ? AND user_id = ?
             `;
-            
-            db.run(updateQuery, [title, original_url, folder_id, bookmarkId, req.user.id], function(err) {
+
+            db.run(updateQuery, [title, original_url, folder_id, bookmarkId, req.user.id], function (err) {
                 if (err) {
                     console.error('Error updating bookmark:', err);
                     return res.status(500).json({ error: 'Gagal mengupdate bookmark' });
                 }
-                
+
                 if (this.changes === 0) {
                     return res.status(404).json({ error: 'Bookmark tidak ditemukan' });
                 }
-                
+
                 res.json({ message: 'Bookmark berhasil diupdate' });
             });
         });
@@ -602,7 +602,7 @@ app.put('/api/admin/bookmarks/:id', authenticateToken, [
 // DELETE /api/admin/bookmarks/:id - Menghapus bookmark
 app.delete('/api/admin/bookmarks/:id', authenticateToken, (req, res) => {
     const bookmarkId = req.params.id;
-    
+
     // Pastikan bookmark milik user yang sedang login
     const checkOwnerQuery = 'SELECT id FROM bookmarks WHERE id = ? AND user_id = ?';
     db.get(checkOwnerQuery, [bookmarkId, req.user.id], (err, bookmark) => {
@@ -610,23 +610,23 @@ app.delete('/api/admin/bookmarks/:id', authenticateToken, (req, res) => {
             console.error('Error checking bookmark ownership:', err);
             return res.status(500).json({ error: 'Gagal memeriksa kepemilikan bookmark' });
         }
-        
+
         if (!bookmark) {
             return res.status(404).json({ error: 'Bookmark tidak ditemukan' });
         }
-        
+
         // Hapus bookmark
         const deleteQuery = 'DELETE FROM bookmarks WHERE id = ? AND user_id = ?';
-        db.run(deleteQuery, [bookmarkId, req.user.id], function(err) {
+        db.run(deleteQuery, [bookmarkId, req.user.id], function (err) {
             if (err) {
                 console.error('Error deleting bookmark:', err);
                 return res.status(500).json({ error: 'Gagal menghapus bookmark' });
             }
-            
+
             if (this.changes === 0) {
                 return res.status(404).json({ error: 'Bookmark tidak ditemukan' });
             }
-            
+
             res.json({ message: 'Bookmark berhasil dihapus' });
         });
     });
@@ -637,10 +637,10 @@ app.get('/api/admin/bookmarks-tree', authenticateToken, (req, res) => {
     // Fungsi rekursif untuk membangun tree structure
     function buildTree(folders, bookmarks, parentId = null) {
         const tree = [];
-        
+
         // Filter folder berdasarkan parent_id
         const childFolders = folders.filter(folder => folder.parent_id === parentId);
-        
+
         childFolders.forEach(folder => {
             const folderNode = {
                 id: folder.id,
@@ -651,19 +651,19 @@ app.get('/api/admin/bookmarks-tree', authenticateToken, (req, res) => {
                 children: [],
                 bookmarks: []
             };
-            
+
             // Tambahkan subfolder secara rekursif
             folderNode.children = buildTree(folders, bookmarks, folder.id);
-            
+
             // Tambahkan bookmark yang ada di folder ini
             folderNode.bookmarks = bookmarks.filter(bookmark => bookmark.folder_id === folder.id);
-            
+
             tree.push(folderNode);
         });
-        
+
         return tree;
     }
-    
+
     // Query untuk mendapatkan semua folder user
     const foldersQuery = `
         SELECT id, name, parent_id, created_at 
@@ -671,7 +671,7 @@ app.get('/api/admin/bookmarks-tree', authenticateToken, (req, res) => {
         WHERE user_id = ? 
         ORDER BY name ASC
     `;
-    
+
     // Query untuk mendapatkan semua bookmark user
     const bookmarksQuery = `
         SELECT id, title, original_url, folder_id, created_at
@@ -679,34 +679,310 @@ app.get('/api/admin/bookmarks-tree', authenticateToken, (req, res) => {
         WHERE user_id = ? 
         ORDER BY title ASC
     `;
-    
+
     // Eksekusi kedua query secara paralel
     db.all(foldersQuery, [req.user.id], (err, folders) => {
         if (err) {
             console.error('Error fetching folders for tree:', err);
             return res.status(500).json({ error: 'Gagal mengambil data folder' });
         }
-        
+
         db.all(bookmarksQuery, [req.user.id], (err, bookmarks) => {
             if (err) {
                 console.error('Error fetching bookmarks for tree:', err);
                 return res.status(500).json({ error: 'Gagal mengambil data bookmark' });
             }
-            
+
             // Bangun tree structure
             const tree = buildTree(folders, bookmarks);
-            
+
             // Tambahkan bookmark yang tidak memiliki folder (orphaned bookmarks)
-            const orphanedBookmarks = bookmarks.filter(bookmark => 
+            const orphanedBookmarks = bookmarks.filter(bookmark =>
                 !folders.some(folder => folder.id === bookmark.folder_id)
             );
-            
+
             res.json({
                 tree: tree,
                 orphaned_bookmarks: orphanedBookmarks,
                 total_folders: folders.length,
                 total_bookmarks: bookmarks.length
             });
+        });
+    });
+});
+
+// ===== NOTES MANAGEMENT ENDPOINTS =====
+
+// GET /api/admin/notes - Mendapatkan semua catatan
+app.get('/api/admin/notes', authenticateToken, (req, res) => {
+    const query = `
+        SELECT id, title, content_html, created_at, updated_at
+        FROM notes
+        WHERE user_id = ?
+        ORDER BY updated_at DESC
+    `;
+
+    db.all(query, [req.user.id], (err, notes) => {
+        if (err) {
+            console.error('Error fetching notes:', err);
+            return res.status(500).json({ error: 'Gagal mengambil data catatan' });
+        }
+        res.json(notes);
+    });
+});
+
+// POST /api/admin/notes - Membuat catatan baru
+app.post('/api/admin/notes', authenticateToken, [
+    body('title').notEmpty().withMessage('Judul catatan diperlukan')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg });
+    }
+
+    const { title, content_html } = req.body;
+
+    const insertQuery = `
+        INSERT INTO notes (title, content_html, user_id)
+        VALUES (?, ?, ?)
+    `;
+
+    db.run(insertQuery, [title, content_html || '', req.user.id], function (err) {
+        if (err) {
+            console.error('Error creating note:', err);
+            return res.status(500).json({ error: 'Gagal membuat catatan' });
+        }
+
+        res.status(201).json({
+            id: this.lastID,
+            title,
+            content_html: content_html || '',
+            message: 'Catatan berhasil dibuat'
+        });
+    });
+});
+
+// PUT /api/admin/notes/:id - Mengupdate catatan
+app.put('/api/admin/notes/:id', authenticateToken, [
+    body('title').notEmpty().withMessage('Judul catatan diperlukan')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg });
+    }
+
+    const noteId = req.params.id;
+    const { title, content_html } = req.body;
+
+    const checkOwnerQuery = 'SELECT id FROM notes WHERE id = ? AND user_id = ?';
+    db.get(checkOwnerQuery, [noteId, req.user.id], (err, note) => {
+        if (err) {
+            console.error('Error checking note ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa kepemilikan catatan' });
+        }
+
+        if (!note) {
+            return res.status(404).json({ error: 'Catatan tidak ditemukan' });
+        }
+
+        const updateQuery = `
+            UPDATE notes
+            SET title = ?, content_html = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND user_id = ?
+        `;
+
+        db.run(updateQuery, [title, content_html || '', noteId, req.user.id], function (err) {
+            if (err) {
+                console.error('Error updating note:', err);
+                return res.status(500).json({ error: 'Gagal mengupdate catatan' });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Catatan tidak ditemukan' });
+            }
+
+            res.json({ message: 'Catatan berhasil diupdate' });
+        });
+    });
+});
+
+// DELETE /api/admin/notes/:id - Menghapus catatan
+app.delete('/api/admin/notes/:id', authenticateToken, (req, res) => {
+    const noteId = req.params.id;
+
+    const checkOwnerQuery = 'SELECT id FROM notes WHERE id = ? AND user_id = ?';
+    db.get(checkOwnerQuery, [noteId, req.user.id], (err, note) => {
+        if (err) {
+            console.error('Error checking note ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa kepemilikan catatan' });
+        }
+
+        if (!note) {
+            return res.status(404).json({ error: 'Catatan tidak ditemukan' });
+        }
+
+        const deleteQuery = 'DELETE FROM notes WHERE id = ? AND user_id = ?';
+        db.run(deleteQuery, [noteId, req.user.id], function (err) {
+            if (err) {
+                console.error('Error deleting note:', err);
+                return res.status(500).json({ error: 'Gagal menghapus catatan' });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Catatan tidak ditemukan' });
+            }
+
+            res.json({ message: 'Catatan berhasil dihapus' });
+        });
+    });
+});
+
+// ===== MARKDOWN DOCS ENDPOINTS =====
+
+// GET /api/admin/markdown - Mendapatkan semua dokumen markdown
+app.get('/api/admin/markdown', authenticateToken, (req, res) => {
+    const query = `
+        SELECT id, title, content_md, content_html, created_at, updated_at
+        FROM markdown_docs
+        WHERE user_id = ?
+        ORDER BY updated_at DESC
+    `;
+
+    db.all(query, [req.user.id], (err, docs) => {
+        if (err) {
+            console.error('Error fetching markdown docs:', err);
+            return res.status(500).json({ error: 'Gagal mengambil data dokumen' });
+        }
+        res.json(docs);
+    });
+});
+
+// GET /api/admin/markdown/:id - Mendapatkan satu dokumen markdown (dengan HTML yang dirender)
+app.get('/api/admin/markdown/:id', authenticateToken, (req, res) => {
+    const docId = req.params.id;
+
+    const query = `
+        SELECT id, title, content_md, content_html, created_at, updated_at
+        FROM markdown_docs
+        WHERE id = ? AND user_id = ?
+    `;
+
+    db.get(query, [docId, req.user.id], (err, doc) => {
+        if (err) {
+            console.error('Error fetching markdown doc:', err);
+            return res.status(500).json({ error: 'Gagal mengambil dokumen' });
+        }
+
+        if (!doc) {
+            return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
+        }
+
+        res.json(doc);
+    });
+});
+
+// POST /api/admin/markdown - Membuat dokumen markdown baru
+app.post('/api/admin/markdown', authenticateToken, [
+    body('title').notEmpty().withMessage('Judul dokumen diperlukan')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg });
+    }
+
+    const { title, content_md } = req.body;
+
+    const insertQuery = `
+        INSERT INTO markdown_docs (title, content_md, user_id)
+        VALUES (?, ?, ?)
+    `;
+
+    db.run(insertQuery, [title, content_md || '', req.user.id], function (err) {
+        if (err) {
+            console.error('Error creating markdown doc:', err);
+            return res.status(500).json({ error: 'Gagal membuat dokumen' });
+        }
+
+        res.status(201).json({
+            id: this.lastID,
+            title,
+            content_md: content_md || '',
+            message: 'Dokumen berhasil dibuat'
+        });
+    });
+});
+
+// PUT /api/admin/markdown/:id - Mengupdate dokumen markdown
+app.put('/api/admin/markdown/:id', authenticateToken, [
+    body('title').notEmpty().withMessage('Judul dokumen diperlukan')
+], (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg });
+    }
+
+    const docId = req.params.id;
+    const { title, content_md, content_html } = req.body;
+
+    const checkOwnerQuery = 'SELECT id FROM markdown_docs WHERE id = ? AND user_id = ?';
+    db.get(checkOwnerQuery, [docId, req.user.id], (err, doc) => {
+        if (err) {
+            console.error('Error checking doc ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa kepemilikan dokumen' });
+        }
+
+        if (!doc) {
+            return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
+        }
+
+        const updateQuery = `
+            UPDATE markdown_docs
+            SET title = ?, content_md = ?, content_html = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND user_id = ?
+        `;
+
+        db.run(updateQuery, [title, content_md || '', content_html || '', docId, req.user.id], function (err) {
+            if (err) {
+                console.error('Error updating markdown doc:', err);
+                return res.status(500).json({ error: 'Gagal mengupdate dokumen' });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
+            }
+
+            res.json({ message: 'Dokumen berhasil diupdate' });
+        });
+    });
+});
+
+// DELETE /api/admin/markdown/:id - Menghapus dokumen markdown
+app.delete('/api/admin/markdown/:id', authenticateToken, (req, res) => {
+    const docId = req.params.id;
+
+    const checkOwnerQuery = 'SELECT id FROM markdown_docs WHERE id = ? AND user_id = ?';
+    db.get(checkOwnerQuery, [docId, req.user.id], (err, doc) => {
+        if (err) {
+            console.error('Error checking doc ownership:', err);
+            return res.status(500).json({ error: 'Gagal memeriksa kepemilikan dokumen' });
+        }
+
+        if (!doc) {
+            return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
+        }
+
+        const deleteQuery = 'DELETE FROM markdown_docs WHERE id = ? AND user_id = ?';
+        db.run(deleteQuery, [docId, req.user.id], function (err) {
+            if (err) {
+                console.error('Error deleting markdown doc:', err);
+                return res.status(500).json({ error: 'Gagal menghapus dokumen' });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
+            }
+
+            res.json({ message: 'Dokumen berhasil dihapus' });
         });
     });
 });

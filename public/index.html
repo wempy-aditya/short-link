@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
@@ -29,22 +31,17 @@
                             Masukkan URL yang ingin dipendekkan
                         </label>
                         <div class="relative">
-                            <input 
-                                type="url" 
-                                id="urlInput" 
+                            <input type="url" id="urlInput"
                                 placeholder="https://contoh-url-panjang-sekali.com/halaman/yang/sangat/panjang"
                                 class="w-full px-4 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                required
-                            >
-                            <i class="fas fa-globe absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                required>
+                            <i
+                                class="fas fa-globe absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </div>
                     </div>
-                    
-                    <button 
-                        type="submit" 
-                        id="shortenBtn"
-                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
-                    >
+
+                    <button type="submit" id="shortenBtn"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
                         <i class="fas fa-magic mr-2"></i>
                         Pendekkan Sekarang!
                     </button>
@@ -64,37 +61,36 @@
                         <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
                         <h3 class="text-2xl font-bold text-gray-800 mb-2">Tautan Berhasil Dipendekkan!</h3>
                     </div>
-                    
+
                     <div class="bg-gray-50 rounded-xl p-6 mb-6">
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-600 mb-2">URL Asli:</label>
                             <p id="originalUrl" class="text-gray-800 break-all"></p>
                         </div>
-                        
+
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-600 mb-2">Tautan Pendek:</label>
                             <div class="flex items-center justify-center space-x-2">
-                                <input 
-                                    type="text" 
-                                    id="shortUrl" 
-                                    readonly 
-                                    class="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-lg text-center font-mono text-lg"
-                                >
-                                <button 
-                                    id="copyBtn" 
-                                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-2"
-                                >
+                                <input type="text" id="shortUrl" readonly
+                                    class="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-lg text-center font-mono text-lg">
+                                <button id="copyBtn"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-2">
                                     <i class="fas fa-copy"></i>
                                     <span>Salin</span>
                                 </button>
                             </div>
                         </div>
+
+                        <div class="mt-6">
+                            <label class="block text-sm font-medium text-gray-600 mb-3">QR Code:</label>
+                            <div class="flex justify-center">
+                                <div id="qrCode" class="bg-white p-4 rounded-lg border border-gray-200"></div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <button 
-                        id="newLinkBtn"
-                        class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
-                    >
+
+                    <button id="newLinkBtn"
+                        class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200">
                         <i class="fas fa-plus mr-2"></i>
                         Buat Tautan Baru
                     </button>
@@ -123,6 +119,7 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         const form = document.getElementById('shortenForm');
         const urlInput = document.getElementById('urlInput');
@@ -135,11 +132,12 @@
         const copyBtn = document.getElementById('copyBtn');
         const newLinkBtn = document.getElementById('newLinkBtn');
         const errorMessage = document.getElementById('errorMessage');
+        const qrCodeContainer = document.getElementById('qrCode');
 
         // Handle form submission
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const url = urlInput.value.trim();
             if (!url) return;
 
@@ -162,9 +160,20 @@
 
                 if (response.ok) {
                     // Show result
-                    originalUrl.textContent = data.originalUrl;
+                    originalUrl.textContent = data.originalUrl || url;
                     shortUrl.value = data.shortUrl;
-                    
+
+                    // Render QR code
+                    qrCodeContainer.innerHTML = '';
+                    new QRCode(qrCodeContainer, {
+                        text: data.shortUrl,
+                        width: 160,
+                        height: 160,
+                        colorDark: "#111827",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+
                     loading.classList.add('hidden');
                     result.classList.remove('hidden');
                 } else {
@@ -183,13 +192,13 @@
         copyBtn.addEventListener('click', async () => {
             try {
                 await navigator.clipboard.writeText(shortUrl.value);
-                
+
                 // Visual feedback
                 const originalText = copyBtn.innerHTML;
                 copyBtn.innerHTML = '<i class="fas fa-check"></i><span>Tersalin!</span>';
                 copyBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 copyBtn.classList.add('bg-green-600');
-                
+
                 setTimeout(() => {
                     copyBtn.innerHTML = originalText;
                     copyBtn.classList.remove('bg-green-600');
@@ -199,12 +208,12 @@
                 // Fallback for older browsers
                 shortUrl.select();
                 document.execCommand('copy');
-                
+
                 const originalText = copyBtn.innerHTML;
                 copyBtn.innerHTML = '<i class="fas fa-check"></i><span>Tersalin!</span>';
                 copyBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                 copyBtn.classList.add('bg-green-600');
-                
+
                 setTimeout(() => {
                     copyBtn.innerHTML = originalText;
                     copyBtn.classList.remove('bg-green-600');
@@ -220,10 +229,12 @@
             error.classList.add('hidden');
             urlInput.value = '';
             urlInput.focus();
+            qrCodeContainer.innerHTML = '';
         });
 
         // Auto focus on input
         urlInput.focus();
     </script>
 </body>
+
 </html>

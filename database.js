@@ -79,31 +79,68 @@ function initializeDatabase() {
                 console.log('Bookmarks table created successfully');
             });
 
+            // Tabel notes untuk menyimpan catatan
+            db.run(`CREATE TABLE IF NOT EXISTS notes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                content_html TEXT,
+                user_id INTEGER NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )`, (err) => {
+                if (err) {
+                    console.error('Error creating notes table:', err);
+                    reject(err);
+                    return;
+                }
+                console.log('Notes table created successfully');
+            });
+
+            // Tabel markdown_docs untuk menyimpan dokumen markdown
+            db.run(`CREATE TABLE IF NOT EXISTS markdown_docs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                content_md TEXT NOT NULL DEFAULT '',
+                content_html TEXT DEFAULT '',
+                user_id INTEGER NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )`, (err) => {
+                if (err) {
+                    console.error('Error creating markdown_docs table:', err);
+                    reject(err);
+                    return;
+                }
+                console.log('Markdown docs table created successfully');
+            });
+
             // Buat user admin default jika belum ada
             const defaultUsername = 'admin';
             const defaultPassword = 'admin123';
-            
+
             db.get('SELECT * FROM users WHERE username = ?', [defaultUsername], (err, row) => {
                 if (err) {
                     console.error('Error checking admin user:', err);
                     reject(err);
                     return;
                 }
-                
+
                 if (!row) {
                     // Hash password dan buat user admin
                     const hashedPassword = bcrypt.hashSync(defaultPassword, 10);
-                    db.run('INSERT INTO users (username, password) VALUES (?, ?)', 
+                    db.run('INSERT INTO users (username, password) VALUES (?, ?)',
                         [defaultUsername, hashedPassword], (err) => {
-                        if (err) {
-                            console.error('Error creating admin user:', err);
-                            reject(err);
-                            return;
-                        }
-                        console.log('Default admin user created successfully');
-                        console.log('Username: admin, Password: admin123');
-                        resolve();
-                    });
+                            if (err) {
+                                console.error('Error creating admin user:', err);
+                                reject(err);
+                                return;
+                            }
+                            console.log('Default admin user created successfully');
+                            console.log('Username: admin, Password: admin123');
+                            resolve();
+                        });
                 } else {
                     console.log('Admin user already exists');
                     resolve();
