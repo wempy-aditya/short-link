@@ -4,67 +4,81 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Kumpulan link Wempy Aditya">
-  <title>Wempy Aditya | Links</title>
+  <title>Links | Short-Link</title>
   <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})()</script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link href="/admin/css/theme.css" rel="stylesheet">
   <style>
-    :root { --accent:#2563eb; --accent-soft:#dbeafe; }
-    body { background: radial-gradient(circle at 10% 0%, #dbeafe 0, transparent 32%), radial-gradient(circle at 100% 18%, #e0e7ff 0, transparent 28%), #f8fafc; }
-    .link-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-    .link-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(30,64,175,.12); border-color:#93c5fd; }
-    .link-card:active { transform: scale(.985); }
-    .theme-ink { --accent:#334155; --accent-soft:#e2e8f0; background:radial-gradient(circle at 10% 0%,#e2e8f0 0,transparent 32%),#f8fafc; }
-    .theme-forest { --accent:#15803d; --accent-soft:#dcfce7; background:radial-gradient(circle at 10% 0%,#dcfce7 0,transparent 32%),#f7fee7; }
-    .theme-sunset { --accent:#c2410c; --accent-soft:#ffedd5; background:radial-gradient(circle at 10% 0%,#ffedd5 0,transparent 32%),#fff7ed; }
-    @media (prefers-reduced-motion: reduce) { .link-card { transition:none; } .link-card:hover { transform:none; } }
+    :root { --accent:#2563eb; --accent-soft:#dbeafe; --page:#f4f7fb; --surface:rgba(255,255,255,.88); --ink:#0f172a; --muted:#64748b; --line:#dce5f0; }
+    html.dark { --page:#0f172a; --surface:rgba(30,41,59,.86); --ink:#f8fafc; --muted:#a8b5c7; --line:#334155; }
+    body { background:var(--page); color:var(--ink); transition:background .3s ease,color .3s ease; }
+    .page-glow { position:fixed; inset:0; pointer-events:none; z-index:-1; background:radial-gradient(circle at 8% 0%, color-mix(in srgb, var(--accent-soft) 72%, transparent), transparent 28%),radial-gradient(circle at 95% 18%, color-mix(in srgb, var(--accent-soft) 50%, transparent), transparent 24%); }
+    .theme-ink { --accent:#64748b; --accent-soft:#e2e8f0; }
+    .theme-forest { --accent:#15803d; --accent-soft:#dcfce7; }
+    .theme-sunset { --accent:#c2410c; --accent-soft:#ffedd5; }
+    .surface { background:var(--surface); border-color:var(--line); backdrop-filter:blur(16px); }
+    .muted { color:var(--muted); }
+    .link-card { transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease; }
+    .link-card:hover { transform:translateY(-2px); border-color:color-mix(in srgb,var(--accent) 45%,var(--line)); box-shadow:0 14px 30px color-mix(in srgb,var(--accent) 12%,transparent); }
+    .link-card:active { transform:scale(.985); }
+    .focus-ring:focus-visible,.link-card:focus-visible { outline:3px solid color-mix(in srgb,var(--accent) 45%,transparent); outline-offset:3px; }
+    .reveal { animation:rise .5s cubic-bezier(.16,1,.3,1) both; animation-delay:calc(var(--i,0) * 70ms); }
+    @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:.01ms !important; } .link-card:hover { transform:none; } }
   </style>
 </head>
-<body class="min-h-screen text-slate-900">
-  <main id="linktreePage" class="mx-auto w-full max-w-2xl px-5 py-8 sm:py-12">
-    <section class="text-center">
-      <div id="avatar" class="mx-auto mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white text-3xl font-bold text-blue-600 shadow-lg ring-4 ring-white/80">W</div>
-      <h1 id="displayName" class="text-3xl font-bold tracking-tight">Loading profile...</h1>
-      <p id="bio" class="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-600"></p>
+<body class="min-h-screen">
+  <div class="page-glow"></div>
+  <main id="linktreePage" class="mx-auto w-full max-w-xl px-5 py-7 sm:py-10">
+    <header class="flex items-center justify-between">
+      <span class="text-xs font-semibold tracking-wide muted">SHORT-LINK</span>
+      <button id="copyProfile" type="button" class="focus-ring muted rounded-full border px-3 py-2 text-xs font-semibold transition hover:text-[var(--accent)]" style="border-color:var(--line)"><i class="fas fa-link mr-1.5" aria-hidden="true"></i>Salin profil</button>
+    </header>
+
+    <section class="pt-10 text-center sm:pt-12">
+      <div id="avatar" class="mx-auto mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-[var(--accent-soft)] text-3xl font-bold text-[var(--accent)] shadow-sm ring-8 ring-white/40 dark:ring-slate-800/40" aria-label="Avatar profil">W</div>
+      <h1 id="displayName" class="text-3xl font-bold tracking-tight sm:text-4xl">Memuat profil...</h1>
+      <p id="bio" class="muted mx-auto mt-3 max-w-md text-sm leading-6"></p>
     </section>
-    <section id="links" class="mt-8 space-y-3" aria-label="Featured links"></section>
-    <p id="emptyLinks" class="hidden py-12 text-center text-sm text-slate-500">Belum ada link publik.</p>
-    <section id="shortener" class="mt-14 border-t border-slate-200/80 pt-8">
-      <div class="mb-4"><h2 class="text-lg font-bold">Shorten a link</h2><p class="mt-1 text-sm text-slate-500">Butuh URL pendek? Buat di sini.</p></div>
-      <form id="shortenForm" class="rounded-2xl border border-slate-200 bg-white/80 p-3 shadow-sm backdrop-blur sm:flex sm:gap-2">
-        <label class="sr-only" for="urlInput">URL yang ingin dipendekkan</label><input id="urlInput" type="url" required placeholder="https://contoh.com/halaman-panjang" class="min-w-0 flex-1 rounded-xl border-0 bg-transparent px-3 py-3 text-sm outline-none ring-0">
-        <button id="shortenBtn" class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 active:scale-95" type="submit"><i class="fas fa-link mr-2"></i>Shorten</button>
-      </form>
-      <div id="shortenResult" class="mt-4 hidden rounded-2xl border border-green-200 bg-green-50 p-4 text-sm"></div>
-      <p id="shortenError" class="mt-3 hidden text-sm text-red-600"></p>
+
+    <section id="links" class="mt-7 space-y-3" aria-label="Link pilihan"></section>
+    <p id="emptyLinks" class="muted hidden py-10 text-center text-sm">Belum ada link publik.</p>
+
+    <section class="mt-10">
+      <details class="surface group rounded-2xl border shadow-sm">
+        <summary class="focus-ring flex cursor-pointer list-none items-center justify-between px-5 py-4 text-sm font-semibold"><span><i class="fas fa-wand-magic-sparkles mr-2 text-[var(--accent)]" aria-hidden="true"></i>Pendekkan tautan</span><i class="fas fa-chevron-down muted text-xs transition group-open:rotate-180" aria-hidden="true"></i></summary>
+        <div class="border-t px-5 pb-5 pt-4" style="border-color:var(--line)">
+          <p class="muted mb-3 text-xs">Buat URL panjang jadi link yang mudah dibagikan.</p>
+          <form id="shortenForm" class="space-y-2 sm:flex sm:gap-2 sm:space-y-0">
+            <label class="sr-only" for="urlInput">URL yang ingin dipendekkan</label><input id="urlInput" type="url" required placeholder="https://contoh.com/halaman-panjang" class="focus-ring min-w-0 flex-1 rounded-xl border bg-transparent px-3 py-3 text-sm outline-none" style="border-color:var(--line);color:var(--ink)">
+            <button id="shortenBtn" class="focus-ring rounded-xl bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-90 active:scale-95 disabled:cursor-wait disabled:opacity-60" type="submit"><i class="fas fa-link mr-2" aria-hidden="true"></i>Pendekkan</button>
+          </form>
+          <div id="shortenResult" class="mt-4 hidden rounded-xl border border-green-300 bg-green-50 p-4 text-sm text-green-900 dark:bg-green-950/40 dark:text-green-100"></div>
+          <p id="shortenError" class="mt-3 hidden text-sm text-red-600 dark:text-red-400"></p>
+        </div>
+      </details>
     </section>
-    <footer class="mt-10 flex items-center justify-between text-xs text-slate-400"><span>Short-Link</span><a href="/admin/login" class="transition hover:text-slate-700">Admin login</a></footer>
+
+    <footer class="muted mt-8 flex items-center justify-between border-t pt-5 text-xs" style="border-color:var(--line)"><span>Link publik Wempy Aditya</span><a href="/admin/login" class="focus-ring rounded px-1 transition hover:text-[var(--accent)]">Masuk admin</a></footer>
   </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script>
     const esc = (value) => String(value || '').replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    const iconFor = (url, fallback) => { try { const host = new URL(url).hostname.toLowerCase(); if (host.includes('instagram')) return 'fab fa-instagram'; if (host.includes('linkedin')) return 'fab fa-linkedin-in'; if (host.includes('github')) return 'fab fa-github'; if (host.includes('youtube')) return 'fab fa-youtube'; if (host.includes('x.com') || host.includes('twitter')) return 'fab fa-x-twitter'; } catch (e) {} return `fas ${fallback || 'fa-link'}`; };
     const page = document.getElementById('linktreePage');
+    let profileUrl = window.location.href;
     async function loadProfile() {
       try {
-        const response = await fetch('/api/linktree/public');
-        const data = await response.json();
-        page.classList.add(`theme-${data.profile.theme || 'ocean'}`);
-        document.title = `${data.profile.display_name || 'Links'} | Short-Link`;
-        document.getElementById('displayName').textContent = data.profile.display_name || 'Your profile';
-        document.getElementById('bio').textContent = data.profile.bio || '';
-        const avatar = document.getElementById('avatar');
-        if (data.profile.avatar_url) avatar.innerHTML = `<img src="${esc(data.profile.avatar_url)}" alt="${esc(data.profile.display_name)}" class="h-full w-full object-cover">`;
-        else avatar.textContent = (data.profile.display_name || 'W').trim().charAt(0).toUpperCase();
-        const links = document.getElementById('links');
-        links.innerHTML = data.links.map((link) => `<a class="link-card flex items-center gap-4 rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background:var(--accent-soft);color:var(--accent)"><i class="fas ${esc(link.icon || 'fa-link')}"></i></span><span class="flex-1 text-center font-semibold text-slate-800">${esc(link.title)}</span><i class="fas fa-arrow-up-right-from-square text-xs text-slate-400"></i></a>`).join('');
-        document.getElementById('emptyLinks').classList.toggle('hidden', data.links.length > 0);
-      } catch (error) { document.getElementById('displayName').textContent = 'Profile unavailable'; }
+        const response = await fetch('/api/linktree/public'); const data = await response.json();
+        page.classList.add(`theme-${data.profile.theme || 'ocean'}`); document.title = `${data.profile.display_name || 'Links'} | Short-Link`; profileUrl = window.location.href;
+        document.getElementById('displayName').textContent = data.profile.display_name || 'Your profile'; document.getElementById('bio').textContent = data.profile.bio || '';
+        const avatar = document.getElementById('avatar'); avatar.setAttribute('aria-label', `Avatar ${data.profile.display_name || 'profil'}`); if (data.profile.avatar_url) avatar.innerHTML = `<img src="${esc(data.profile.avatar_url)}" alt="${esc(data.profile.display_name || 'Avatar profil')}" class="h-full w-full object-cover">`; else avatar.textContent = (data.profile.display_name || 'W').trim().charAt(0).toUpperCase();
+        const links = document.getElementById('links'); links.innerHTML = data.links.map((link, index) => `<a class="link-card focus-ring reveal surface flex items-center gap-4 rounded-2xl border px-4 py-3.5 shadow-sm" style="--i:${index}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"><span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg" style="background:var(--accent-soft);color:var(--accent)"><i class="${iconFor(link.url, link.icon)}" aria-hidden="true"></i></span><span class="min-w-0 flex-1 text-left"><span class="block truncate font-semibold">${esc(link.title)}</span><span class="muted block truncate text-xs">${esc(new URL(link.url).hostname.replace(/^www\./, ''))}</span></span><i class="fas fa-arrow-up-right-from-square muted text-xs" aria-hidden="true"></i></a>`).join(''); document.getElementById('emptyLinks').classList.toggle('hidden', data.links.length > 0);
+      } catch (error) { document.getElementById('displayName').textContent = 'Profil tidak tersedia'; }
     }
-    document.getElementById('shortenForm').addEventListener('submit', async (event) => {
-      event.preventDefault(); const button = document.getElementById('shortenBtn'); const error = document.getElementById('shortenError'); const result = document.getElementById('shortenResult'); button.disabled = true; error.classList.add('hidden');
-      try { const response = await fetch('/api/shorten', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url:document.getElementById('urlInput').value.trim()}) }); const data = await response.json(); if (!response.ok) throw new Error(data.error || 'URL tidak valid'); result.innerHTML = `<div class="font-semibold text-green-800">Short link siap</div><div class="mt-2 flex flex-wrap items-center gap-2"><a class="font-mono text-green-900 underline" href="${esc(data.shortUrl)}" target="_blank">${esc(data.shortUrl)}</a><button id="copyShort" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-semibold text-white">Copy</button></div><div id="qrCode" class="mt-3"></div>`; result.classList.remove('hidden'); new QRCode(document.getElementById('qrCode'), {text:data.shortUrl,width:110,height:110}); document.getElementById('copyShort').onclick=()=>navigator.clipboard.writeText(data.shortUrl); } catch (e) { error.textContent=e.message; error.classList.remove('hidden'); } finally { button.disabled=false; }
-    });
+    document.getElementById('copyProfile').addEventListener('click', async () => { try { await navigator.clipboard.writeText(profileUrl); const button = document.getElementById('copyProfile'); const old = button.innerHTML; button.innerHTML = '<i class="fas fa-check mr-1.5" aria-hidden="true"></i>Tersalin'; setTimeout(() => { button.innerHTML = old; }, 1600); } catch (error) {} });
+    document.getElementById('shortenForm').addEventListener('submit', async (event) => { event.preventDefault(); const button = document.getElementById('shortenBtn'); const error = document.getElementById('shortenError'); const result = document.getElementById('shortenResult'); button.disabled = true; error.classList.add('hidden'); try { const response = await fetch('/api/shorten', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url:document.getElementById('urlInput').value.trim()}) }); const data = await response.json(); if (!response.ok) throw new Error(data.error || 'URL tidak valid'); result.innerHTML = `<div class="font-semibold">Link pendek siap</div><div class="mt-2 flex flex-wrap items-center gap-2"><a class="font-mono underline" href="${esc(data.shortUrl)}" target="_blank" rel="noopener noreferrer">${esc(data.shortUrl)}</a><button id="copyShort" class="focus-ring rounded-lg bg-green-700 px-3 py-1.5 text-xs font-semibold text-white">Salin</button></div><div id="qrCode" class="mt-3"></div>`; result.classList.remove('hidden'); new QRCode(document.getElementById('qrCode'), {text:data.shortUrl,width:110,height:110}); document.getElementById('copyShort').onclick=()=>navigator.clipboard.writeText(data.shortUrl); } catch (e) { error.textContent=e.message; error.classList.remove('hidden'); } finally { button.disabled=false; } });
     loadProfile();
   </script>
 </body>
