@@ -21,6 +21,8 @@ test('database initializes token_version and export is valid SQLite', async () =
   assert.equal(user.token_version, 0);
   const storageTable = await get("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'storage_files'");
   assert.equal(storageTable.name, 'storage_files');
+  const linktreeTables = await get("SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name IN ('linktree_profiles', 'linktree_links')");
+  assert.equal(linktreeTables.count, 2);
 
   const backup = await exportDatabase();
   assert.match(backup.filename, /^shortlink-backup-.*\.db$/);

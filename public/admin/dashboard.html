@@ -136,6 +136,10 @@
                         <i class="fas fa-link mr-1 sm:mr-2"></i>
                         Kelola Tautan
                     </button>
+                    <button id="linktreeTab" class="tab-button py-4 px-3 sm:px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap" data-tab="linktree-tab">
+                        <i class="fas fa-user-circle mr-1 sm:mr-2"></i>
+                        Linktree
+                    </button>
                     <button id="bookmarksTab"
                         class="tab-button py-4 px-3 sm:px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
                         data-tab="bookmarks-tab">
@@ -167,6 +171,27 @@
                         Settings
                     </button>
                 </nav>
+            </div>
+        </div>
+
+        <div id="linktree-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 xl:grid-cols-[0.8fr_1.2fr] gap-6">
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <h2 class="text-xl font-bold text-gray-900">Linktree profile</h2>
+                    <p class="text-sm text-gray-500 mt-1 mb-6">Konten ini tampil di halaman utama publik.</p>
+                    <form id="linktreeProfileForm" class="space-y-4">
+                        <div><label for="linktreeDisplayName" class="block text-sm font-medium text-gray-700 mb-2">Display name</label><input id="linktreeDisplayName" maxlength="80" required class="w-full px-3 py-3 border border-gray-300 rounded-xl"></div>
+                        <div><label for="linktreeBio" class="block text-sm font-medium text-gray-700 mb-2">Bio</label><textarea id="linktreeBio" maxlength="240" rows="3" class="w-full px-3 py-3 border border-gray-300 rounded-xl"></textarea></div>
+                        <div><label for="linktreeAvatarUrl" class="block text-sm font-medium text-gray-700 mb-2">Avatar URL</label><input id="linktreeAvatarUrl" type="url" placeholder="https://..." class="w-full px-3 py-3 border border-gray-300 rounded-xl"></div>
+                        <div><label for="linktreeTheme" class="block text-sm font-medium text-gray-700 mb-2">Theme</label><select id="linktreeTheme" class="w-full px-3 py-3 border border-gray-300 rounded-xl"><option value="ocean">Ocean</option><option value="ink">Ink</option><option value="forest">Forest</option><option value="sunset">Sunset</option></select></div>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-xl" type="submit">Save profile</button>
+                    </form>
+                </section>
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div class="flex items-center justify-between gap-3 mb-5"><div><h2 class="text-xl font-bold text-gray-900">Featured links</h2><p class="text-sm text-gray-500 mt-1">Atur link yang tampil dan urutannya.</p></div><a href="/" target="_blank" rel="noreferrer" class="text-sm text-blue-600 hover:text-blue-800">View page <i class="fas fa-arrow-up-right-from-square ml-1"></i></a></div>
+                    <form id="linktreeLinkForm" class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end border-b border-gray-100 pb-5 mb-5"><div><label for="linktreeLinkTitle" class="block text-sm font-medium text-gray-700 mb-2">Title</label><input id="linktreeLinkTitle" required maxlength="80" placeholder="Instagram" class="w-full px-3 py-3 border border-gray-300 rounded-xl"></div><div><label for="linktreeLinkUrl" class="block text-sm font-medium text-gray-700 mb-2">URL</label><input id="linktreeLinkUrl" type="url" required placeholder="https://..." class="w-full px-3 py-3 border border-gray-300 rounded-xl"></div><div class="flex gap-2"><button id="linktreeLinkSubmit" class="bg-gray-900 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-xl" type="submit">Add</button><button id="linktreeLinkCancel" class="hidden border border-gray-300 text-gray-600 font-semibold py-3 px-4 rounded-xl" type="button">Cancel</button></div></form>
+                    <div id="linktreeLinksList" class="space-y-3"></div>
+                </section>
             </div>
         </div>
 
@@ -817,6 +842,7 @@
 <script src="/admin/js/markdown.js"></script>
 <script src="/admin/js/settings.js"></script>
 <script src="/admin/js/storage.js"></script>
+<script src="/admin/js/linktree.js"></script>
 <script src="/admin/js/app.js"></script>
 </body>
 

@@ -70,6 +70,27 @@ const SCHEMA = [
     user_id INTEGER NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`,
+  `CREATE TABLE IF NOT EXISTS linktree_profiles (
+    user_id INTEGER PRIMARY KEY,
+    display_name TEXT NOT NULL DEFAULT '',
+    bio TEXT NOT NULL DEFAULT '',
+    avatar_url TEXT NOT NULL DEFAULT '',
+    theme TEXT NOT NULL DEFAULT 'ocean' CHECK (theme IN ('ocean', 'ink', 'forest', 'sunset')),
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS linktree_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    icon TEXT NOT NULL DEFAULT 'fa-link',
+    visible INTEGER NOT NULL DEFAULT 1,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+  )`,
 ];
 
 const DEFAULT_ADMIN = { username: 'admin', password: 'admin123' };

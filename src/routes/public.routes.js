@@ -10,6 +10,12 @@ const storage = require('../services/storage.service');
 
 const router = express.Router();
 
+router.get('/api/linktree/public', asyncHandler(async (req, res) => {
+  const profile = await get('SELECT display_name, bio, avatar_url, theme FROM linktree_profiles ORDER BY user_id ASC LIMIT 1');
+  const links = await require('../db/queries').all('SELECT id, title, url, icon FROM linktree_links WHERE user_id = (SELECT user_id FROM linktree_profiles ORDER BY user_id ASC LIMIT 1) AND visible = 1 ORDER BY sort_order ASC, id ASC');
+  res.json({ profile: profile || { display_name: 'Your profile', bio: 'Add your links from admin dashboard.', avatar_url: '', theme: 'ocean' }, links });
+}));
+
 router.get('/drive/share/:token', asyncHandler(async (req, res) => {
   const hash = require('crypto').createHash('sha256').update(req.params.token).digest('hex');
   const row = await get('SELECT object_key, mime_type, original_name, visibility FROM storage_files WHERE share_token_hash = ?', [hash]);

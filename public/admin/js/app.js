@@ -35,7 +35,7 @@
   // - Saat load: prioritas URL hash > localStorage > default 'links-tab'.
   //   (hash berguna untuk bookmark/link langsung & refresh tetap di tab yang sama)
   const STORAGE_KEY = 'activeTab';
-  const VALID_TABS = ['links-tab', 'bookmarks-tab', 'notes-tab', 'markdown-tab', 'settings-tab', 'storage-tab'];
+  const VALID_TABS = ['links-tab', 'linktree-tab', 'bookmarks-tab', 'notes-tab', 'markdown-tab', 'settings-tab', 'storage-tab'];
   const DEFAULT_TAB = 'links-tab';
 
   const tabButtons = document.querySelectorAll('.tab-button');
@@ -44,6 +44,7 @@
   // Peta fungsi loader per tab
   const loaders = {
     'links-tab': () => window.App.links.loadLinks(),
+    'linktree-tab': () => window.App.linktree.load(),
     'bookmarks-tab': () => window.App.bookmarks.loadBookmarksTree(),
     'notes-tab': () => window.App.notes.loadNotes(),
     'markdown-tab': () => window.App.markdown.loadMarkdownDocs(),

@@ -1,251 +1,71 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pemendek Tautan Simpel</title>
-    <script>
-        // Bootstrap tema: terapkan class 'dark' sebelum render (anti flash)
-        (function () {
-            try {
-                var t = localStorage.getItem('theme');
-                var dark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                if (dark) document.documentElement.classList.add('dark');
-            } catch (e) {}
-        })();
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="/admin/css/theme.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Kumpulan link Wempy Aditya">
+  <title>Wempy Aditya | Links</title>
+  <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})()</script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="/admin/css/theme.css" rel="stylesheet">
+  <style>
+    :root { --accent:#2563eb; --accent-soft:#dbeafe; }
+    body { background: radial-gradient(circle at 10% 0%, #dbeafe 0, transparent 32%), radial-gradient(circle at 100% 18%, #e0e7ff 0, transparent 28%), #f8fafc; }
+    .link-card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+    .link-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(30,64,175,.12); border-color:#93c5fd; }
+    .link-card:active { transform: scale(.985); }
+    .theme-ink { --accent:#334155; --accent-soft:#e2e8f0; background:radial-gradient(circle at 10% 0%,#e2e8f0 0,transparent 32%),#f8fafc; }
+    .theme-forest { --accent:#15803d; --accent-soft:#dcfce7; background:radial-gradient(circle at 10% 0%,#dcfce7 0,transparent 32%),#f7fee7; }
+    .theme-sunset { --accent:#c2410c; --accent-soft:#ffedd5; background:radial-gradient(circle at 10% 0%,#ffedd5 0,transparent 32%),#fff7ed; }
+    @media (prefers-reduced-motion: reduce) { .link-card { transition:none; } .link-card:hover { transform:none; } }
+  </style>
 </head>
-
-<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4">
-                <i class="fas fa-link text-blue-600"></i>
-                Pemendek Tautan Simpel
-            </h1>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Ubah URL panjang Anda menjadi tautan pendek yang mudah dibagikan dalam hitungan detik
-            </p>
-        </div>
-
-        <!-- Main Form -->
-        <div class="max-w-4xl mx-auto">
-            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
-                <form id="shortenForm" class="space-y-6">
-                    <div>
-                        <label for="urlInput" class="block text-sm font-medium text-gray-700 mb-2">
-                            Masukkan URL yang ingin dipendekkan
-                        </label>
-                        <div class="relative">
-                            <input type="url" id="urlInput"
-                                placeholder="https://contoh-url-panjang-sekali.com/halaman/yang/sangat/panjang"
-                                class="w-full px-4 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                required>
-                            <i
-                                class="fas fa-globe absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="shortenBtn"
-                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300">
-                        <i class="fas fa-magic mr-2"></i>
-                        Pendekkan Sekarang!
-                    </button>
-                </form>
-
-                <!-- Loading State -->
-                <div id="loading" class="hidden text-center py-8">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                    <p class="mt-2 text-gray-600">Memproses tautan...</p>
-                </div>
-            </div>
-
-            <!-- Result Section -->
-            <div id="result" class="hidden bg-white rounded-2xl shadow-xl p-8">
-                <div class="text-center">
-                    <div class="mb-6">
-                        <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
-                        <h3 class="text-2xl font-bold text-gray-800 mb-2">Tautan Berhasil Dipendekkan!</h3>
-                    </div>
-
-                    <div class="bg-gray-50 rounded-xl p-6 mb-6">
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-600 mb-2">URL Asli:</label>
-                            <p id="originalUrl" class="text-gray-800 break-all"></p>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-600 mb-2">Tautan Pendek:</label>
-                            <div class="flex items-center justify-center space-x-2">
-                                <input type="text" id="shortUrl" readonly
-                                    class="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-lg text-center font-mono text-lg">
-                                <button id="copyBtn"
-                                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                                    <i class="fas fa-copy"></i>
-                                    <span>Salin</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="mt-6">
-                            <label class="block text-sm font-medium text-gray-600 mb-3">QR Code:</label>
-                            <div class="flex justify-center">
-                                <div id="qrCode" class="bg-white p-4 rounded-lg border border-gray-200"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button id="newLinkBtn"
-                        class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200">
-                        <i class="fas fa-plus mr-2"></i>
-                        Buat Tautan Baru
-                    </button>
-                </div>
-            </div>
-
-            <!-- Error Section -->
-            <div id="error" class="hidden bg-red-50 border border-red-200 rounded-2xl p-6 mt-6">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-red-500 text-xl mr-3"></i>
-                    <div>
-                        <h4 class="text-red-800 font-semibold">Terjadi Kesalahan</h4>
-                        <p id="errorMessage" class="text-red-600 mt-1"></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="text-center mt-16 text-gray-500">
-            <p class="mb-4">Aplikasi Pemendek Tautan Gratis & Mudah Digunakan</p>
-            <a href="/admin/login" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                <i class="fas fa-user-shield mr-1"></i>
-                Login Admin
-            </a>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script>
-        const form = document.getElementById('shortenForm');
-        const urlInput = document.getElementById('urlInput');
-        const shortenBtn = document.getElementById('shortenBtn');
-        const loading = document.getElementById('loading');
-        const result = document.getElementById('result');
-        const error = document.getElementById('error');
-        const originalUrl = document.getElementById('originalUrl');
-        const shortUrl = document.getElementById('shortUrl');
-        const copyBtn = document.getElementById('copyBtn');
-        const newLinkBtn = document.getElementById('newLinkBtn');
-        const errorMessage = document.getElementById('errorMessage');
-        const qrCodeContainer = document.getElementById('qrCode');
-
-        // Handle form submission
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const url = urlInput.value.trim();
-            if (!url) return;
-
-            // Show loading state
-            form.classList.add('hidden');
-            loading.classList.remove('hidden');
-            result.classList.add('hidden');
-            error.classList.add('hidden');
-
-            try {
-                const response = await fetch('/api/shorten', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ url }),
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Show result
-                    originalUrl.textContent = data.originalUrl || url;
-                    shortUrl.value = data.shortUrl;
-
-                    // Render QR code
-                    qrCodeContainer.innerHTML = '';
-                    new QRCode(qrCodeContainer, {
-                        text: data.shortUrl,
-                        width: 160,
-                        height: 160,
-                        colorDark: "#111827",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.M
-                    });
-
-                    loading.classList.add('hidden');
-                    result.classList.remove('hidden');
-                } else {
-                    throw new Error(data.error || 'Terjadi kesalahan');
-                }
-            } catch (err) {
-                // Show error
-                errorMessage.textContent = err.message;
-                loading.classList.add('hidden');
-                error.classList.remove('hidden');
-                form.classList.remove('hidden');
-            }
-        });
-
-        // Handle copy button
-        copyBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(shortUrl.value);
-
-                // Visual feedback
-                const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = '<i class="fas fa-check"></i><span>Tersalin!</span>';
-                copyBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                copyBtn.classList.add('bg-green-600');
-
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalText;
-                    copyBtn.classList.remove('bg-green-600');
-                    copyBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                }, 2000);
-            } catch (err) {
-                // Fallback for older browsers
-                shortUrl.select();
-                document.execCommand('copy');
-
-                const originalText = copyBtn.innerHTML;
-                copyBtn.innerHTML = '<i class="fas fa-check"></i><span>Tersalin!</span>';
-                copyBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                copyBtn.classList.add('bg-green-600');
-
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalText;
-                    copyBtn.classList.remove('bg-green-600');
-                    copyBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                }, 2000);
-            }
-        });
-
-        // Handle new link button
-        newLinkBtn.addEventListener('click', () => {
-            form.classList.remove('hidden');
-            result.classList.add('hidden');
-            error.classList.add('hidden');
-            urlInput.value = '';
-            urlInput.focus();
-            qrCodeContainer.innerHTML = '';
-        });
-
-        // Auto focus on input
-        urlInput.focus();
-    </script>
+<body class="min-h-screen text-slate-900">
+  <main id="linktreePage" class="mx-auto w-full max-w-2xl px-5 py-8 sm:py-12">
+    <section class="text-center">
+      <div id="avatar" class="mx-auto mb-5 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-white text-3xl font-bold text-blue-600 shadow-lg ring-4 ring-white/80">W</div>
+      <h1 id="displayName" class="text-3xl font-bold tracking-tight">Loading profile...</h1>
+      <p id="bio" class="mx-auto mt-3 max-w-lg text-sm leading-6 text-slate-600"></p>
+    </section>
+    <section id="links" class="mt-8 space-y-3" aria-label="Featured links"></section>
+    <p id="emptyLinks" class="hidden py-12 text-center text-sm text-slate-500">Belum ada link publik.</p>
+    <section id="shortener" class="mt-14 border-t border-slate-200/80 pt-8">
+      <div class="mb-4"><h2 class="text-lg font-bold">Shorten a link</h2><p class="mt-1 text-sm text-slate-500">Butuh URL pendek? Buat di sini.</p></div>
+      <form id="shortenForm" class="rounded-2xl border border-slate-200 bg-white/80 p-3 shadow-sm backdrop-blur sm:flex sm:gap-2">
+        <label class="sr-only" for="urlInput">URL yang ingin dipendekkan</label><input id="urlInput" type="url" required placeholder="https://contoh.com/halaman-panjang" class="min-w-0 flex-1 rounded-xl border-0 bg-transparent px-3 py-3 text-sm outline-none ring-0">
+        <button id="shortenBtn" class="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 active:scale-95" type="submit"><i class="fas fa-link mr-2"></i>Shorten</button>
+      </form>
+      <div id="shortenResult" class="mt-4 hidden rounded-2xl border border-green-200 bg-green-50 p-4 text-sm"></div>
+      <p id="shortenError" class="mt-3 hidden text-sm text-red-600"></p>
+    </section>
+    <footer class="mt-10 flex items-center justify-between text-xs text-slate-400"><span>Short-Link</span><a href="/admin/login" class="transition hover:text-slate-700">Admin login</a></footer>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    const esc = (value) => String(value || '').replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    const page = document.getElementById('linktreePage');
+    async function loadProfile() {
+      try {
+        const response = await fetch('/api/linktree/public');
+        const data = await response.json();
+        page.classList.add(`theme-${data.profile.theme || 'ocean'}`);
+        document.title = `${data.profile.display_name || 'Links'} | Short-Link`;
+        document.getElementById('displayName').textContent = data.profile.display_name || 'Your profile';
+        document.getElementById('bio').textContent = data.profile.bio || '';
+        const avatar = document.getElementById('avatar');
+        if (data.profile.avatar_url) avatar.innerHTML = `<img src="${esc(data.profile.avatar_url)}" alt="${esc(data.profile.display_name)}" class="h-full w-full object-cover">`;
+        else avatar.textContent = (data.profile.display_name || 'W').trim().charAt(0).toUpperCase();
+        const links = document.getElementById('links');
+        links.innerHTML = data.links.map((link) => `<a class="link-card flex items-center gap-4 rounded-2xl border border-slate-200 bg-white/90 px-5 py-4 shadow-sm" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style="background:var(--accent-soft);color:var(--accent)"><i class="fas ${esc(link.icon || 'fa-link')}"></i></span><span class="flex-1 text-center font-semibold text-slate-800">${esc(link.title)}</span><i class="fas fa-arrow-up-right-from-square text-xs text-slate-400"></i></a>`).join('');
+        document.getElementById('emptyLinks').classList.toggle('hidden', data.links.length > 0);
+      } catch (error) { document.getElementById('displayName').textContent = 'Profile unavailable'; }
+    }
+    document.getElementById('shortenForm').addEventListener('submit', async (event) => {
+      event.preventDefault(); const button = document.getElementById('shortenBtn'); const error = document.getElementById('shortenError'); const result = document.getElementById('shortenResult'); button.disabled = true; error.classList.add('hidden');
+      try { const response = await fetch('/api/shorten', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url:document.getElementById('urlInput').value.trim()}) }); const data = await response.json(); if (!response.ok) throw new Error(data.error || 'URL tidak valid'); result.innerHTML = `<div class="font-semibold text-green-800">Short link siap</div><div class="mt-2 flex flex-wrap items-center gap-2"><a class="font-mono text-green-900 underline" href="${esc(data.shortUrl)}" target="_blank">${esc(data.shortUrl)}</a><button id="copyShort" class="rounded-lg bg-green-700 px-3 py-1.5 text-xs font-semibold text-white">Copy</button></div><div id="qrCode" class="mt-3"></div>`; result.classList.remove('hidden'); new QRCode(document.getElementById('qrCode'), {text:data.shortUrl,width:110,height:110}); document.getElementById('copyShort').onclick=()=>navigator.clipboard.writeText(data.shortUrl); } catch (e) { error.textContent=e.message; error.classList.remove('hidden'); } finally { button.disabled=false; }
+    });
+    loadProfile();
+  </script>
 </body>
-
 </html>
