@@ -21,11 +21,22 @@
     </tr>`).join('');
   }
 
+  function renderStats(stats) {
+    $('storageTotalFiles').textContent = stats.totalFiles.toLocaleString();
+    $('storageTotalBytes').textContent = formatBytes(stats.totalBytes);
+    $('storagePrivateFiles').textContent = stats.privateFiles.toLocaleString();
+    $('storagePublicFiles').textContent = stats.publicFiles.toLocaleString();
+  }
+
   async function load() {
     try {
-      const result = await apiRequest('/api/admin/storage');
+      const [result, stats] = await Promise.all([
+        apiRequest('/api/admin/storage'),
+        apiRequest('/api/admin/storage/stats'),
+      ]);
       render(result.files);
-      status.textContent = `${result.files.length} file`;
+      renderStats(stats);
+      status.textContent = `${result.files.length} ${result.files.length === 1 ? 'file' : 'files'}`;
     } catch (error) {
       status.textContent = error.message;
     }

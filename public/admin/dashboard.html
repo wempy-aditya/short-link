@@ -204,35 +204,37 @@
 
         <!-- Storage Tab Content -->
         <div id="storage-tab" class="tab-content hidden">
-            <section class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800"><i class="fas fa-hard-drive text-blue-600 mr-2"></i>Storage / Drive</h2>
-                        <p class="text-sm text-gray-500">Simpan file di object storage. Default access: private.</p>
+            <section class="rounded-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white shadow-sm p-6 sm:p-8 mb-6 overflow-hidden relative">
+                <div class="relative z-10 flex flex-wrap items-end justify-between gap-6">
+                    <div class="max-w-xl">
+                        <div class="flex items-center gap-3 mb-4"><span class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center"><i class="fas fa-hard-drive text-lg"></i></span><span class="text-xs uppercase tracking-widest text-blue-200">Storage / Drive</span></div>
+                        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Your files, one quiet place.</h2>
+                        <p class="text-blue-100 mt-2">Upload, preview, and share files while keeping access under your control.</p>
                     </div>
-                    <span id="storageStatus" class="text-xs text-gray-500"></span>
+                    <span id="storageStatus" class="text-sm text-blue-100">Loading files...</span>
                 </div>
-                <form id="storageUploadForm" class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3 items-end mt-6">
-                    <div>
-                        <label for="storageFile" class="block text-sm font-medium text-gray-700 mb-2">File</label>
-                        <input id="storageFile" type="file" required class="block w-full text-sm border border-gray-300 rounded-lg p-2">
-                    </div>
-                    <div>
-                        <label for="storageVisibility" class="block text-sm font-medium text-gray-700 mb-2">Access</label>
-                        <select id="storageVisibility" class="px-3 py-3 border border-gray-300 rounded-lg">
-                            <option value="private">Private — login required</option>
-                            <option value="public">Public — share URL</option>
-                        </select>
-                    </div>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg" type="submit">Upload</button>
+                <div class="absolute -right-16 -bottom-24 w-64 h-64 rounded-full bg-blue-400/10 blur-2xl"></div>
+            </section>
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5"><p class="text-xs uppercase tracking-wide text-gray-500">Files</p><p id="storageTotalFiles" class="mt-2 text-2xl font-bold text-gray-900">-</p><p class="text-xs text-gray-500 mt-1">total uploaded</p></div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5"><p class="text-xs uppercase tracking-wide text-gray-500">Storage used</p><p id="storageTotalBytes" class="mt-2 text-2xl font-bold text-gray-900">-</p><p class="text-xs text-gray-500 mt-1">across all files</p></div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5"><p class="text-xs uppercase tracking-wide text-gray-500">Private</p><p id="storagePrivateFiles" class="mt-2 text-2xl font-bold text-gray-900">-</p><p class="text-xs text-gray-500 mt-1">login required</p></div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-5"><p class="text-xs uppercase tracking-wide text-gray-500">Public</p><p id="storagePublicFiles" class="mt-2 text-2xl font-bold text-gray-900">-</p><p class="text-xs text-gray-500 mt-1">shareable files</p></div>
+            </section>
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 mb-6">
+                <div class="flex items-center justify-between gap-3 mb-5"><div><h3 class="text-lg font-bold text-gray-900">Upload a file</h3><p class="text-sm text-gray-500 mt-1">Files default to private. You can change access later.</p></div><i class="fas fa-cloud-arrow-up text-blue-600 text-xl"></i></div>
+                <form id="storageUploadForm" class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3 items-end">
+                    <div><label for="storageFile" class="block text-sm font-medium text-gray-700 mb-2">Choose file</label><input id="storageFile" type="file" required class="block w-full text-sm border border-gray-300 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500"></div>
+                    <div><label for="storageVisibility" class="block text-sm font-medium text-gray-700 mb-2">Access</label><select id="storageVisibility" class="px-3 py-3 border border-gray-300 rounded-xl bg-white"><option value="private">Private</option><option value="public">Public</option></select></div>
+                    <button class="bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-semibold py-3 px-6 rounded-xl transition" type="submit"><i class="fas fa-upload mr-2"></i>Upload</button>
                 </form>
             </section>
-            <section class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-200"><h3 class="font-bold text-gray-800">My files</h3></div>
-                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-50"><tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Access</th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr></thead><tbody id="storageTableBody" class="bg-white divide-y divide-gray-200"></tbody></table></div>
-                <p id="storageEmpty" class="hidden text-center text-gray-500 py-10">Belum ada file.</p>
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-5 sm:px-6 py-5 border-b border-gray-100 flex items-center justify-between gap-3"><div><h3 class="font-bold text-gray-900">My files</h3><p class="text-sm text-gray-500 mt-1">Preview or manage access and share links.</p></div><i class="fas fa-folder-open text-gray-400"></i></div>
+                <div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-100"><thead class="bg-gray-50/80"><tr>
+                    <th class="px-5 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Name</th><th class="px-5 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th><th class="px-5 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Access</th><th class="px-5 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Actions</th>
+                </tr></thead><tbody id="storageTableBody" class="bg-white divide-y divide-gray-100"></tbody></table></div>
+                <p id="storageEmpty" class="hidden text-center text-gray-500 py-12">Belum ada file. Upload file pertama di atas.</p>
             </section>
         </div>
 

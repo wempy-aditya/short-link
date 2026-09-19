@@ -41,6 +41,13 @@ router.get('/', authenticateToken, asyncHandler(async (req, res) => {
   res.json({ files: files.map(publicFileShape) });
 }));
 
+router.get('/stats', authenticateToken, asyncHandler(async (req, res) => {
+  const summary = await get("SELECT COUNT(*) AS total_files, COALESCE(SUM(size_bytes), 0) AS total_bytes, COALESCE(SUM(CASE WHEN visibility = 'public' THEN 1 ELSE 0 END), 0) AS public_files FROM storage_files WHERE user_id = ?", [req.user.id]);
+  const totalFiles = summary.total_files || 0;
+  const publicFiles = summary.public_files || 0;
+  res.json({ totalFiles, totalBytes: summary.total_bytes || 0, publicFiles, privateFiles: totalFiles - publicFiles });
+}));
+
 router.post('/upload', authenticateToken, upload.single('file'), uploadErrorHandler, [body('visibility').optional().isIn(['private', 'public'])], validateVisibility, asyncHandler(async (req, res) => {
   if (!storage.isConfigured()) return res.status(503).json({ error: 'S3 storage belum dikonfigurasi' });
   if (!req.file) return res.status(400).json({ error: 'File wajib dipilih' });
