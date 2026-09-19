@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { run, get } = require('./queries');
+const { run, get, all } = require('./queries');
 
 // Skema tabel — dipertahankan persis seperti versi monolith (database.js)
 // supaya DB lama yang sudah dipakai user tetap kompatibel.
@@ -7,7 +7,8 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    token_version INTEGER NOT NULL DEFAULT 0
   )`,
   `CREATE TABLE IF NOT EXISTS links (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,6 +64,11 @@ const DEFAULT_ADMIN = { username: 'admin', password: 'admin123' };
 async function initializeDatabase() {
   for (const sql of SCHEMA) {
     await run(sql);
+  }
+
+  const columns = await all('PRAGMA table_info(users)');
+  if (!columns.some((column) => column.name === 'token_version')) {
+    await run('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
   }
 
   // Seed user admin default kalau belum ada

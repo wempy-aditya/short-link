@@ -9,6 +9,7 @@ yarn-error.log*
 *.sqlite
 *.sqlite3
 shortlink.db
+data/
 shortener.db
 
 # Environment variables

@@ -11,9 +11,16 @@ const bookmarkTreeRoutes = require('./routes/bookmarkTree.routes');
 const noteRoutes = require('./routes/note.routes');
 const markdownRoutes = require('./routes/markdown.routes');
 const statsRoutes = require('./routes/stats.routes');
+const settingsRoutes = require('./routes/settings.routes');
 
 function createApp() {
   const app = express();
+
+  // Upload backup perlu menerima binary body sebelum JSON parser global.
+  app.use('/api/admin/settings/restore/stage', express.raw({
+    type: 'application/octet-stream',
+    limit: '100mb',
+  }));
 
   // Middleware global
   app.use(express.json());
@@ -35,6 +42,7 @@ function createApp() {
   app.use('/api/admin/notes', noteRoutes);
   app.use('/api/admin/markdown', markdownRoutes);
   app.use('/api/admin/stats', statsRoutes); // /api/admin/stats
+  app.use('/api/admin/settings', settingsRoutes);
 
   // Error handler global
   // eslint-disable-next-line no-unused-vars

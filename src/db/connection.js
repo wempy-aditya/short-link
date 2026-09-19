@@ -1,6 +1,21 @@
 const sqlite3 = require('sqlite3').verbose();
 const config = require('../config');
 
-const db = new sqlite3.Database(config.dbPath);
+let db = new sqlite3.Database(config.dbPath);
 
-module.exports = db;
+function getDb() {
+  return db;
+}
+
+function closeDb() {
+  return new Promise((resolve, reject) => {
+    db.close((err) => (err ? reject(err) : resolve()));
+  });
+}
+
+function reopenDb() {
+  db = new sqlite3.Database(config.dbPath);
+  return db;
+}
+
+module.exports = { getDb, closeDb, reopenDb };

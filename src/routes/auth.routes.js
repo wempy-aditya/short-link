@@ -5,8 +5,9 @@ const { body, validationResult } = require('express-validator');
 const path = require('path');
 
 const config = require('../config');
-const { get } = require('../db/queries');
+const { get, run } = require('../db/queries');
 const asyncHandler = require('../utils/asyncHandler');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -41,12 +42,41 @@ router.post(
     }
 
     const token = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, username: user.username, tokenVersion: user.token_version || 0 },
       config.jwtSecret,
       { expiresIn: '24h' }
     );
 
     res.json({ token, message: 'Login berhasil' });
+  })
+);
+
+// Ganti password dan invalidate seluruh JWT lama melalui token_version.
+router.put(
+  '/api/admin/account/password',
+  authenticateToken,
+  [
+    body('currentPassword').isString().notEmpty(),
+    body('newPassword').isString().isLength({ min: 12 }),
+    body('confirmPassword').isString().notEmpty(),
+  ],
+  asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    if (!errors.isEmpty() || newPassword !== confirmPassword) {
+      return res.status(400).json({ error: 'Password baru tidak valid atau konfirmasi tidak cocok' });
+    }
+
+    const user = await get('SELECT password FROM users WHERE id = ?', [req.user.id]);
+    if (!user || !bcrypt.compareSync(currentPassword, user.password)) {
+      return res.status(401).json({ error: 'Password saat ini salah' });
+    }
+
+    await run('UPDATE users SET password = ?, token_version = token_version + 1 WHERE id = ?', [
+      bcrypt.hashSync(newPassword, 12),
+      req.user.id,
+    ]);
+    res.json({ message: 'Password berhasil diubah. Silakan login ulang.' });
   })
 );
 

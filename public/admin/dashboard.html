@@ -154,7 +154,45 @@
                         <i class="fas fa-markdown mr-1 sm:mr-2"></i>
                         Markdown
                     </button>
+                    <button id="settingsTab"
+                        class="tab-button py-4 px-3 sm:px-4 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap"
+                        data-tab="settings-tab">
+                        <i class="fas fa-gear mr-1 sm:mr-2"></i>
+                        Settings
+                    </button>
                 </nav>
+            </div>
+        </div>
+
+        <!-- Settings Tab Content -->
+        <div id="settings-tab" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <section class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-2"><i class="fas fa-key text-blue-600 mr-2"></i>Account Security</h2>
+                    <p class="text-sm text-gray-500 mb-6">Mengganti password akan membatalkan semua token login lama.</p>
+                    <form id="passwordForm" class="space-y-4">
+                        <input id="currentPassword" type="password" autocomplete="current-password" placeholder="Password saat ini" required class="w-full px-3 py-3 border border-gray-300 rounded-lg">
+                        <input id="newPassword" type="password" autocomplete="new-password" minlength="12" placeholder="Password baru (minimal 12 karakter)" required class="w-full px-3 py-3 border border-gray-300 rounded-lg">
+                        <input id="confirmPassword" type="password" autocomplete="new-password" minlength="12" placeholder="Konfirmasi password baru" required class="w-full px-3 py-3 border border-gray-300 rounded-lg">
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg" type="submit">Ganti password</button>
+                    </form>
+                </section>
+                <section class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-xl font-bold text-gray-800 mb-2"><i class="fas fa-download text-green-600 mr-2"></i>Database Backup</h2>
+                    <p class="text-sm text-gray-500 mb-6">Download snapshot SQLite lengkap untuk backup lokal.</p>
+                    <button id="exportDbBtn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-5 rounded-lg">Export database</button>
+                </section>
+                <section class="bg-white rounded-xl shadow-sm p-6 lg:col-span-2">
+                    <h2 class="text-xl font-bold text-gray-800 mb-2"><i class="fas fa-upload text-orange-600 mr-2"></i>Database Restore</h2>
+                    <p class="text-sm text-gray-500 mb-4">Upload `.db` backup. File divalidasi dulu dan tidak langsung mengganti database aktif.</p>
+                    <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                        <input id="restoreFile" type="file" accept=".db,application/vnd.sqlite3,application/x-sqlite3" class="block w-full text-sm">
+                        <button id="stageRestoreBtn" class="bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-5 rounded-lg whitespace-nowrap">Validate & stage</button>
+                    </div>
+                    <div id="stagedRestoreInfo" class="hidden mt-5 p-4 rounded-lg bg-orange-50 border border-orange-200 text-sm text-orange-900"></div>
+                    <button id="activateRestoreBtn" class="hidden mt-4 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-5 rounded-lg">Activate restore</button>
+                    <p class="text-xs text-gray-500 mt-4">Restore membuat backup otomatis sebelum replace, lalu semua sesi lama dibatalkan. Aktivasi bersifat destructive.</p>
+                </section>
             </div>
         </div>
 
@@ -735,6 +773,7 @@
 <script src="/admin/js/bookmarks.js"></script>
 <script src="/admin/js/notes.js"></script>
 <script src="/admin/js/markdown.js"></script>
+<script src="/admin/js/settings.js"></script>
 <script src="/admin/js/app.js"></script>
 </body>
 
