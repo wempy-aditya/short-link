@@ -12,6 +12,7 @@ const noteRoutes = require('./routes/note.routes');
 const markdownRoutes = require('./routes/markdown.routes');
 const statsRoutes = require('./routes/stats.routes');
 const settingsRoutes = require('./routes/settings.routes');
+const storageRoutes = require('./routes/storage.routes');
 
 function createApp() {
   const app = express();
@@ -43,6 +44,7 @@ function createApp() {
   app.use('/api/admin/markdown', markdownRoutes);
   app.use('/api/admin/stats', statsRoutes); // /api/admin/stats
   app.use('/api/admin/settings', settingsRoutes);
+  app.use('/api/admin/storage', storageRoutes);
 
   // Error handler global
   // eslint-disable-next-line no-unused-vars

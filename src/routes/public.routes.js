@@ -6,8 +6,17 @@ const path = require('path');
 const config = require('../config');
 const { run, get } = require('../db/queries');
 const asyncHandler = require('../utils/asyncHandler');
+const storage = require('../services/storage.service');
 
 const router = express.Router();
+
+router.get('/drive/share/:token', asyncHandler(async (req, res) => {
+  const hash = require('crypto').createHash('sha256').update(req.params.token).digest('hex');
+  const row = await get('SELECT object_key, mime_type, original_name, visibility FROM storage_files WHERE share_token_hash = ?', [hash]);
+  if (!row) return res.status(404).send('File share tidak ditemukan');
+  if (row.visibility !== 'public') return res.status(403).send('File ini private dan membutuhkan login');
+  res.redirect(302, await storage.createPreviewUrl(row.object_key, row.mime_type, row.original_name));
+}));
 
 // Halaman utama (pemendek tautan publik)
 router.get('/', (req, res) => {

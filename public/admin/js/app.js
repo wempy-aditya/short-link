@@ -35,7 +35,7 @@
   // - Saat load: prioritas URL hash > localStorage > default 'links-tab'.
   //   (hash berguna untuk bookmark/link langsung & refresh tetap di tab yang sama)
   const STORAGE_KEY = 'activeTab';
-  const VALID_TABS = ['links-tab', 'bookmarks-tab', 'notes-tab', 'markdown-tab', 'settings-tab'];
+  const VALID_TABS = ['links-tab', 'bookmarks-tab', 'notes-tab', 'markdown-tab', 'settings-tab', 'storage-tab'];
   const DEFAULT_TAB = 'links-tab';
 
   const tabButtons = document.querySelectorAll('.tab-button');
@@ -48,6 +48,7 @@
     'notes-tab': () => window.App.notes.loadNotes(),
     'markdown-tab': () => window.App.markdown.loadMarkdownDocs(),
     'settings-tab': () => window.App.settings.loadStagedRestore(),
+    'storage-tab': () => window.App.storage.load(),
   };
 
   // Tab yang sudah pernah di-load (lazy load SEKALI saja) — state pager

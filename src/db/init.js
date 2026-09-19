@@ -57,6 +57,19 @@ const SCHEMA = [
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`,
+  `CREATE TABLE IF NOT EXISTS storage_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    object_key TEXT UNIQUE NOT NULL,
+    original_name TEXT NOT NULL,
+    mime_type TEXT NOT NULL DEFAULT 'application/octet-stream',
+    size_bytes INTEGER NOT NULL,
+    visibility TEXT NOT NULL DEFAULT 'private' CHECK (visibility IN ('private', 'public')),
+    share_token_hash TEXT UNIQUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+  )`,
 ];
 
 const DEFAULT_ADMIN = { username: 'admin', password: 'admin123' };

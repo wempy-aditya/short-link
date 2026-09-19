@@ -23,6 +23,7 @@ Aplikasi pemendek tautan *(URL shortener)* berbasis **Node.js + Express + SQLite
 | QR Code | Generate QR code untuk tiap tautan & bookmark |
 | Catatan (Notes) | Editor WYSIWYG dengan Quill.js |
 | Markdown Docs | Editor & reader dokumen Markdown + drag & drop upload file `.md` |
+| Storage / Drive | Upload file arbitrary ke S3-compatible storage, private/public access, preview, share link |
 
 ---
 
@@ -52,6 +53,13 @@ Variabel lingkungan bisa diatur sebelum menjalankan:
 |----------|---------|------------|
 | `PORT` | `4000` | Port server |
 | `JWT_SECRET` | `your-secret-key-change-this-in-production` | Secret key JWT |
+| `S3_ENDPOINT` | kosong | Endpoint S3-compatible |
+| `S3_REGION` | `auto` | Region S3 |
+| `S3_BUCKET` | kosong | Nama bucket |
+| `S3_ACCESS_KEY_ID` | kosong | Access key, isi lokal saja |
+| `S3_SECRET_ACCESS_KEY` | kosong | Secret key, isi lokal saja |
+| `STORAGE_MAX_FILE_BYTES` | `104857600` | Batas upload 100 MB |
+| `STORAGE_PRESIGNED_TTL` | `300` | Masa berlaku URL preview, detik |
 
 Contoh:
 ```bash
@@ -131,6 +139,7 @@ short-link/
 | `bookmarks` | `id`, `title`, `original_url`, `folder_id`, `user_id` | Bookmark dalam folder |
 | `notes` | `id`, `title`, `content_html`, `user_id`, `created_at`, `updated_at` | Catatan WYSIWYG |
 | `markdown_docs` | `id`, `title`, `content_md`, `content_html`, `user_id`, `created_at`, `updated_at` | Dokumen Markdown |
+| `storage_files` | `object_key`, `original_name`, `mime_type`, `size_bytes`, `visibility`, `share_token_hash`, `user_id` | Metadata file S3 dan permission |
 
 ---
 
